@@ -10,6 +10,7 @@ const label = { inputProps: { "aria-label": "Switch demo" } };
 export default function Home() {
   return (
     <div className={styles.container}>
+      <p>You are not logged in</p>
       <button
         onClick={() => {
           signIn();

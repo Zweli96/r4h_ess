@@ -66,7 +66,7 @@ export default function SignInSide() {
         md={7}
         sx={{
           backgroundImage:
-            "url(https://i.ibb.co/xSwfy6P/Company-Signage-Mockup.jpg)",
+            "url(https://i.ibb.co/x5JDJVQ/Outdoor-Signage-Mockup-R4-H.jpg)",
           backgroundRepeat: "no-repeat",
           backgroundColor: (t) =>
             t.palette.mode === "light"
