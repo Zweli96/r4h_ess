@@ -1,23 +1,23 @@
 "use client";
-import styles from "./page.module.css";
-import Switch from "@mui/material/Switch";
-import Link from "@mui/material/Link";
-import NextLink from "next/link";
-import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { redirect } from "next/navigation";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const label = { inputProps: { "aria-label": "Switch demo" } };
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <p>You are not logged in</p>
-      <button
-        onClick={() => {
-          signIn();
-        }}
-      >
-        Login
-      </button>
-    </div>
-  );
-}
+const Protected = () => {
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      redirect("/signin");
+    } else if (status === "authenticated") {
+      redirect("/profile");
+    }
+  }, [status]);
+
+  return <CircularProgress />;
+};
+
+export default Protected;

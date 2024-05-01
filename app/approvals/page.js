@@ -1,7 +1,7 @@
 import React from "react";
-import Approvals from "@components/Approvals";
+import Approvals from "../../components/Approvals";
 import Box from "@mui/material/Box";
-import Nav from "@components/Navbar";
+import Nav from "../../components/Navbar";
 
 const page = () => {
   return (

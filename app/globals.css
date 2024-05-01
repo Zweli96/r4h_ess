@@ -105,3 +105,62 @@ a {
     color-scheme: dark;
   }
 }
+
+label {
+  display: flex;
+  clear: both;
+}
+
+.daycard {
+  width: 120px;
+  text-align: center;
+  border: 1px solid gray;
+  border-radius: 4px;
+  padding: 0 20px 0 20px;
+  margin: 0 20px 20px 0;
+  float: left;
+}
+
+.hover {
+  background: #ffffd8;
+}
+input {
+  margin: 5px;
+  width: auto;
+  text-align: right;
+}
+label {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: bolder;
+  white-space: nowrap;
+}
+
+.resizedTextbox {
+  width: 40px;
+  height: 20px;
+}
+
+.dateTitle {
+  font-size: small;
+  font-weight: bold;
+}
+
+/* Adjust the select element */
+select {
+  width: 80px; /* Make the select element fill its container horizontally */
+  height: 20px;
+  padding: 1px; /* Add padding for better appearance */
+  font-size: xx-small; /* Adjust font size as needed */
+  border: 1px solid gray; /* Add a border for visual separation */
+  border-radius: 4px; /* Add border radius for rounded corners */
+}
+
+.dayCardTotal {
+  font-size: smaller;
+  border: 1px solid #b2beb5;
+  background-color: #b2beb5;
+  margin: 10px 0 10px 0;
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -44,13 +44,14 @@ const Copyright = (props) => {
 // TODO remove, this demo shouldn't need to reset the theme.
 
 export default function SignInSide() {
-  const [userInfo, setUserInfo] = useState({ email: "", password: "" });
+  const [userInfo, setUserInfo] = useState({ username: "", password: "" });
   const handleSubmit = async (e) => {
     e.preventDefault();
     const res = await signIn("credentials", {
-      email: userInfo.email,
+      username: userInfo.username,
       password: userInfo.password,
-      redirect: false,
+      redirect: true,
+      callbackUrl: "/",
     });
 
     console.log(res);
@@ -110,15 +111,15 @@ export default function SignInSide() {
               margin="normal"
               required
               fullWidth
-              type="email"
-              id="email"
-              label="Email Address"
-              name="email"
-              value={userInfo.email}
-              autoComplete="email"
+              type="text"
+              id="username"
+              label="Username"
+              name="username"
+              value={userInfo.username}
+              autoComplete="username"
               autoFocus
               onChange={({ target }) =>
-                setUserInfo({ ...userInfo, email: target.value })
+                setUserInfo({ ...userInfo, username: target.value })
               }
             />
             <TextField

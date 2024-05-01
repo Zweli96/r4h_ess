@@ -2,9 +2,10 @@
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { redirect } from "next/navigation";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const Protected = () => {
-  const { status, data } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -21,7 +22,7 @@ const Protected = () => {
     );
   }
 
-  return <div>Loading...</div>;
+  return <CircularProgress />;
 };
 
 export default Protected;
