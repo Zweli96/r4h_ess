@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Chip from "@mui/material/Chip";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Grid from "@mui/material/Grid";
 import { Key } from "@mui/icons-material";
+import Totals from "@../../../components/Totals";
+import PeriodSelector from "@../../../components/PeriodSelector";
+import Select from "@mui/material/Select";
+import Grid from "@mui/material/Unstable_Grid2";
+import Box from "@mui/material/Box";
+import axios from "axios";
+import { getSession } from "next-auth/react";
 
 function formatDate(dateString) {
   const months = [
@@ -35,564 +38,202 @@ const type_leave = "leave";
 const type_projects = "projects";
 
 export default function App() {
-  const sampleTimesheet = {
-    1: {
-      date: "2024-02-15",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    2: {
-      date: "2024-02-16",
-      projects: {
-        CDC: 6,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    3: {
-      date: "2024-02-17",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    4: {
-      date: "2024-02-18",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    5: {
-      date: "2024-02-19",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    6: {
-      date: "2024-02-20",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    7: {
-      date: "2024-02-21",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    8: {
-      date: "2024-02-22",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    9: {
-      date: "2024-02-23",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    10: {
-      date: "2024-02-24",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    11: {
-      date: "2024-02-25",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    12: {
-      date: "2024-02-26",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    13: {
-      date: "2024-02-27",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    14: {
-      date: "2024-02-28",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    15: {
-      date: "2024-02-29",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    17: {
-      date: "2024-03-01",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    18: {
-      date: "2024-03-02",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    19: {
-      date: "2024-03-03",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    20: {
-      date: "2024-03-04",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    21: {
-      date: "2024-03-05",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    22: {
-      date: "2024-03-06",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    23: {
-      date: "2024-03-07",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    24: {
-      date: "2024-03-08",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    25: {
-      date: "2024-03-09",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    26: {
-      date: "2024-03-10",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    27: {
-      date: "2024-03-11",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    28: {
-      date: "2024-03-12",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    29: {
-      date: "2024-03-13",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    30: {
-      date: "2024-03-14",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
-    31: {
-      date: "2024-03-15",
-      projects: {
-        CDC: 8.5,
-        R4H: 0,
-        TOIL: 0,
-      },
-      leave: {
-        sick_leave: 0,
-        study_leave: 0,
-        maternity_paternity_leave: 0,
-        compassionate_leave: 0,
-        unpaid_leave: 0,
-        administrative_leave: 0,
-        public_leave: 0,
-        annual_leave: 0,
-      },
-    },
+  const [period, setPeriod] = useState(""); // this is the period selector
+  const [loading, setLoading] = useState(false); // this is the universal loading
+  const [timesheet, setTimesheet] = useState(""); // This is now for populating the actual timesheet
+  const [error, setError] = useState({});
+  async function submitTimesheet() {
+    const session = await getSession();
+  }
+
+  // When a period is selected this runs
+  useEffect(() => {
+    const fetchData = async () => {
+      console.log(`The period is ${period}`);
+      const session = await getSession();
+      if (session) {
+        try {
+          setLoading(true);
+          const response = await axios({
+            method: "get",
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}timesheets/periods/employee/${period}`,
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          const result = await response.data;
+          setLoading(false);
+
+          // Update the timesheet state after data is fetched
+          if (result.status) {
+            setTimesheet(result.timesheet);
+          } else {
+            setTimesheet(result);
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          setLoading(false);
+        }
+      }
+    };
+
+    if (period) {
+      fetchData();
+    }
+  }, [period]);
+
+  // This is for the period selector
+  const handlePeriodChange = (value) => {
+    setPeriod(value);
   };
 
-  const [timesheet, setTimesheet] = useState(sampleTimesheet);
+  function countActiveDays(timesheet) {
+    let activeDays = 0;
 
-  const timesheetEntries = Object.entries(sampleTimesheet);
+    for (const day in timesheet) {
+      const entry = timesheet[day];
+      const { projects, leave } = entry;
+
+      const projectHours = Object.values(projects).reduce(
+        (sum, val) => sum + val,
+        0
+      );
+      const leaveHours = Object.values(leave).reduce(
+        (sum, val) => sum + val,
+        0
+      );
+
+      if (projectHours > 0 || leaveHours > 0) {
+        activeDays++;
+      }
+    }
+
+    return activeDays;
+  }
+
+  function sumAllHours(timesheet) {
+    let totalHours = 0;
+
+    for (const day in timesheet) {
+      const entry = timesheet[day];
+      const { projects, leave } = entry;
+
+      const projectHours = Object.values(projects)
+        .map((val) => parseFloat(val) || 0)
+        .reduce((sum, val) => sum + val, 0);
+      const leaveHours = Object.values(leave)
+        .map((val) => parseFloat(val) || 0)
+        .reduce((sum, val) => sum + val, 0);
+
+      totalHours += projectHours + leaveHours;
+    }
+
+    // Determine if the total hours should be an integer or a float with one decimal place
+    return totalHours % 1 === 0 ? totalHours.toFixed(0) : totalHours.toFixed(1);
+  }
+
+  function countLeaveDays(timesheet) {
+    let leaveDays = 0;
+
+    for (const day in timesheet) {
+      const entry = timesheet[day];
+      const { leave } = entry;
+
+      const leaveHours = Object.values(leave)
+        .map((val) => parseFloat(val) || 0)
+        .reduce((sum, val) => sum + val, 0);
+
+      if (leaveHours > 0) {
+        leaveDays++;
+      }
+    }
+
+    return leaveDays;
+  }
+
+  function countLeaveDays(timesheet) {
+    let leaveDays = 0;
+
+    for (const day in timesheet) {
+      const entry = timesheet[day];
+      const { leave } = entry;
+
+      const leaveHours = Object.values(leave)
+        .map((val) => parseFloat(val) || 0)
+        .reduce((sum, val) => sum + val, 0);
+
+      if (leaveHours > 0) {
+        leaveDays++;
+      }
+    }
+
+    return leaveDays;
+  }
+
+  function calculateProjectPercentages(timesheet) {
+    const totalProjectHours = {};
+    let totalHoursWorked = 0;
+
+    for (const day in timesheet) {
+      const { projects } = timesheet[day];
+
+      for (const project in projects) {
+        const hours = parseFloat(projects[project]) || 0;
+        totalProjectHours[project] = (totalProjectHours[project] || 0) + hours;
+        totalHoursWorked += hours;
+      }
+    }
+
+    const projectPercentages = {};
+    for (const project in totalProjectHours) {
+      const percentage = (totalProjectHours[project] / totalHoursWorked) * 100;
+      projectPercentages[project] = percentage.toFixed(1); // one decimal place
+    }
+
+    return projectPercentages;
+  }
+
+  const daysTotal = Object.keys(timesheet).length;
+  const daysFilled = countActiveDays(timesheet);
+  const hoursFilled = sumAllHours(timesheet);
+  const hoursTotal = 176;
+  const leaveDays = countLeaveDays(timesheet);
+  const levelOfEffort = calculateProjectPercentages(timesheet);
 
   const handleChange = (dayId, hourType, hourName, value) => {
     setTimesheet((prevTimesheet) => {
-      const updatedTimesheet = { ...prevTimesheet };
-      const day = updatedTimesheet[dayId];
-      const updatedDay = { ...day };
-      const type = updatedDay[hourType];
-      const updatedType = { ...type };
-      updatedType[hourName] = value;
-      updatedDay[hourType] = updatedType;
-      updatedTimesheet[dayId] = updatedDay;
-      return updatedTimesheet;
+      if (hourType === "projects") {
+        const updatedTimesheet = { ...prevTimesheet };
+        const day = updatedTimesheet[dayId];
+        const updatedDay = { ...day };
+        const type = updatedDay[hourType];
+        const updatedType = { ...type };
+        updatedType[hourName] = value;
+        updatedDay[hourType] = updatedType;
+        updatedTimesheet[dayId] = updatedDay;
+        console.log(updatedTimesheet);
+        return updatedTimesheet;
+      }
+      if (hourType === "leave") {
+        const updatedTimesheet = { ...prevTimesheet };
+        const day = updatedTimesheet[dayId];
+        const updatedDay = { ...day };
+        const type = updatedDay[hourType];
+        let updatedType = { ...type };
+        updatedType = Object.keys(updatedType).reduce(
+          (acc, key) => ({ ...acc, [key]: 0 }),
+          {}
+        );
+        if (hourName) {
+          updatedType = {
+            [hourName]: value,
+          };
+        }
+        updatedDay[hourType] = updatedType;
+        updatedTimesheet[dayId] = updatedDay;
+        console.log(updatedTimesheet);
+        return updatedTimesheet;
+      }
     });
   };
 
@@ -608,65 +249,67 @@ export default function App() {
   };
 
   return (
-    <div>
-      {Object.keys(timesheet).map((key) => (
-        <DayCard
-          key={key}
-          dayId={key}
-          day={timesheet[key].date}
-          leave={timesheet[key].leave}
-          projects={timesheet[key].projects}
-          handleChange={handleChange}
-          totalHours={calculateTotalHours(timesheet[key])}
-        />
-      ))}
-    </div>
-  );
-}
-
-function Totals({ currentStatus, totalHours, leaveDays }) {
-  return (
-    // <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-    //   <h5>
-    //     Total Hours&nbsp;&nbsp;
-    //     <Chip label={20} color="primary" />
-    //   </h5>
-    //   <h5>
-    //     Leave Days&nbsp;&nbsp;
-    //     <Chip label={0} color="success" />
-    //   </h5>
-    //   <Button variant="contained">Submit</Button>
-    //   <br />
-    // </Stack>
-    <Grid container direction="row" sx={{ mb: 2 }}>
-      <Grid item xs={5}>
-        <Stack direction="row" spacing={1}>
-          <h5>
-            Total Hours&nbsp;&nbsp;
-            <Chip label={20} color="primary" />
-          </h5>
-          <h5>
-            Leave Days&nbsp;&nbsp;
-            <Chip label={0} color="success" />
-          </h5>
-        </Stack>
+    <Box sx={{ flexGrow: 1, mr: 2 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }} alignItems="center">
+        <Grid item xs={12} sm={4}>
+          <h2>Submit Timesheet</h2>
+        </Grid>
+        <Grid item xs={false} sm={4}></Grid>
+        <Grid item xs={12} sm={4}>
+          <PeriodSelector setPeriod={handlePeriodChange} value={period} />
+        </Grid>
+        <Grid item xs={12}>
+          <hr />
+        </Grid>
       </Grid>
-      <Grid container xs={5} justifyContent="center"></Grid>
-      <Grid item xs={2}>
-        <Button variant="contained">Submit</Button>
-      </Grid>
-    </Grid>
+      {timesheet ? (
+        <>
+          <Totals
+            daysTotal={daysTotal}
+            daysFilled={daysFilled}
+            hoursFilled={hoursFilled}
+            hoursTotal={hoursTotal}
+            leaveDays={leaveDays}
+            levelOfEffort={levelOfEffort}
+          />
+          <>
+            {Object.keys(timesheet).map((key) => (
+              <DayCard
+                key={key}
+                dayId={key}
+                day={timesheet[key].date}
+                leave={timesheet[key].leave}
+                projects={timesheet[key].projects}
+                handleChange={handleChange}
+                totalHours={calculateTotalHours(timesheet[key])}
+              />
+            ))}
+          </>
+        </>
+      ) : (
+        <div>
+          <h3>No timesheet selected, please select a timesheet</h3>
+        </div>
+      )}
+    </Box>
   );
 }
 
 function DayCard({ dayId, day, projects, leave, handleChange, totalHours }) {
   const [hover, setHover] = useState(false);
   const [selectedLeaveType, setSelectedLeaveType] = useState("select_leave");
+  const [leaveSelected, setLeaveSelected] = useState(false);
 
-  const handleSelectChange = (e) => {
+  function handleSelectChange(e, dayID) {
     const selectedValue = e.target.value;
     setSelectedLeaveType(selectedValue);
-  };
+    handleChange(dayID, "leave");
+    if (selectedValue === "select_leave") {
+      setLeaveSelected(false);
+    } else {
+      setLeaveSelected(true);
+    }
+  }
 
   let className = "daycard";
   if (hover) {
@@ -686,12 +329,15 @@ function DayCard({ dayId, day, projects, leave, handleChange, totalHours }) {
           label={item}
           displayLabel={item}
           value={projects[item]}
-          fieldType={"leave"}
+          fieldType={"projects"}
           dayId={dayId}
           handleChange={handleChange}
         />
       ))}
-      <select onChange={handleSelectChange} value={selectedLeaveType}>
+      <select
+        onChange={(e) => handleSelectChange(e, dayId)}
+        value={selectedLeaveType}
+      >
         <option value="select_leave" selected>
           Select Leave
         </option>
@@ -710,9 +356,11 @@ function DayCard({ dayId, day, projects, leave, handleChange, totalHours }) {
       <Input // Use selectedLeaveType as key to track the specific input
         label={selectedLeaveType}
         displayLabel={"Leave"}
-        value={leave[selectedLeaveType]} // Value of the selected leave type
-        fieldType={"projects"}
+        value={leave[selectedLeaveType] ?? ""} // Value of the selected leave type or empty string if it doesn't exist
+        fieldType={"leave"}
         handleChange={handleChange}
+        dayId={dayId}
+        leaveSelected={leaveSelected}
       />
 
       <div className="dayCardTotal">
@@ -723,14 +371,24 @@ function DayCard({ dayId, day, projects, leave, handleChange, totalHours }) {
   );
 }
 
-function Input({ label, displayLabel, value, fieldType, dayId, handleChange }) {
+function Input({
+  label,
+  displayLabel,
+  value,
+  fieldType,
+  dayId,
+  handleChange,
+  leaveSelected,
+}) {
+  const isDisabled = fieldType === "leave" && !leaveSelected;
+
   return (
     <label>
       {displayLabel}
       {"   "}
       <input
         value={value}
-        onChange={(e) => handleChange(dayId, "projects", label, e.target.value)}
+        onChange={(e) => handleChange(dayId, fieldType, label, e.target.value)}
         // dayId, hourType, hourName, value
         fieldType={fieldType}
         type="number"
@@ -738,6 +396,7 @@ function Input({ label, displayLabel, value, fieldType, dayId, handleChange }) {
         min={0}
         max={24}
         step={0.5}
+        disabled={isDisabled}
       />
     </label>
   );

@@ -8,8 +8,9 @@ import { getSession } from "../utils/session";
 import AppDrawer from "@/../../components/AppDrawer";
 import Navbar from "@/../../components/Navbar";
 import Layout from "@/../../components/Layout";
+import LayoutX from "@/../../components/LayoutX";
 import Box from "@mui/material/Box";
-import { useState } from "react";
+import Container from "@mui/material/Container";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -39,8 +40,15 @@ export default async function RootLayout({ children }) {
           <ThemeRegistry options={{ key: "mui-theme" }}>
             <Box sx={{ display: "flex" }}>
               <CssBaseline />
-              <Layout />
-              {children}
+              {session ? (
+                <>
+                  <LayoutX />
+                  <Container sx={{ mt: 10, mb: 4 }}>{children}</Container>
+                </>
+              ) : (
+                children
+              )}
+              {/*  */}
             </Box>
           </ThemeRegistry>
         </body>

@@ -1,21 +1,21 @@
 "use client";
-import { useState } from "react";
-import MuiAppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormGroup from "@mui/material/FormGroup";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
-import MuiDrawer from "@mui/material/Drawer";
 import { styled } from "@mui/material/styles";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import List from "@mui/material/List";
+import { menu } from "./listItems";
+import { hasChildren } from "@../../../utils/utils";
+import * as React from "react";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Collapse from "@mui/material/Collapse";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Link from "next/link";
+import { useState } from "react";
+import MuiDrawer from "@mui/material/Drawer";
 
 const drawerWidth = 240;
 const Drawer = styled(MuiDrawer, {
@@ -36,32 +36,82 @@ const Drawer = styled(MuiDrawer, {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-      width: theme.spacing(7),
+      width: 0, // Completely hide the drawer on small screens when closed
       [theme.breakpoints.up("sm")]: {
+        width: theme.spacing(7),
+      },
+      [theme.breakpoints.up("md")]: {
         width: theme.spacing(9),
       },
     }),
   },
 }));
 
-export default function AppDrawer({ open, toggleDrawer }) {
-  <Drawer variant="permanent" open={open}>
-    <Toolbar
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "flex-end",
-        px: [1],
-      }}
-    >
-      <IconButton onClick={toggleDrawer}>
-        <ChevronLeftIcon />
-      </IconButton>
-    </Toolbar>
+const MenuItem = ({ item, drawerOpen }) => {
+  const Component = hasChildren(item) ? MultiLevel : SingleLevel;
+  return <Component item={item} drawerOpen={drawerOpen} />;
+};
 
-    <List component="nav">
-      {/* <Divider sx={{ my: 1 }} />
+const SingleLevel = ({ item }) => {
+  return (
+    <Link href={item.to}>
+      <ListItem button>
+        <ListItemIcon>{item.icon}</ListItemIcon>
+        <ListItemText primary={item.title} />
+      </ListItem>
+    </Link>
+  );
+};
+
+const MultiLevel = ({ item, drawerOpen }) => {
+  const { items: children } = item;
+  const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    drawerOpen ? setOpen((prev) => !prev) : setOpen(false);
+  };
+
+  return (
+    <React.Fragment>
+      <ListItem button onClick={handleClick}>
+        <ListItemIcon>{item.icon}</ListItemIcon>
+        <ListItemText primary={item.title} />
+        {open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+      </ListItem>
+      <Collapse in={drawerOpen ? open : false} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {children.map((child, key) => (
+            <MenuItem key={key} item={child} />
+          ))}
+        </List>
+      </Collapse>
+    </React.Fragment>
+  );
+};
+
+export default function AppDrawer({ open, toggleDrawer }) {
+  return (
+    <Drawer variant="permanent" open={open}>
+      <Toolbar
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          px: [1],
+        }}
+      >
+        <IconButton onClick={toggleDrawer}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </Toolbar>
+
+      <List component="nav">
+        {menu.map((item, key) => (
+          <MenuItem key={key} item={item} drawerOpen={open} />
+        ))}
+        {/* <Divider sx={{ my: 1 }} />
             {secondaryListItems} */}
-    </List>
-  </Drawer>;
+      </List>
+    </Drawer>
+  );
 }

@@ -14,76 +14,22 @@ import Checkbox from "@mui/material/Checkbox";
 import Tooltip from "@mui/material/Tooltip";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-
-// Generate Order Data
-function createData(
-  id,
-  name,
-  period,
-  date_submitted,
-  total_hours,
-  leave_taken
-) {
-  return { id, name, period, date_submitted, total_hours, leave_taken };
-}
-
-const rows = [
-  createData(
-    0,
-    "Madalitso Gombwa",
-    "February - 2024",
-    "16 Mar, 2024",
-    "176 / 176",
-    "0 Days"
-  ),
-  createData(
-    1,
-    "Felix Petro",
-    "February - 2024",
-    "16 Mar, 2024",
-    "176 / 176",
-    "0 Days"
-  ),
-  createData(
-    2,
-    "Blessings Gausi",
-    "February - 2024",
-    "16 Mar, 2024",
-    "176 / 176",
-    "0 Days"
-  ),
-  createData(
-    3,
-    "Hope Mwase",
-    "February - 2024",
-    "16 Mar, 2024",
-    "176 / 176",
-    "10 Days"
-  ),
-  createData(
-    4,
-    "Emmanuel Potani",
-    "February - 2024",
-    "16 Mar, 2024",
-    "176 / 176",
-    "0 Days"
-  ),
-];
+import { IconButton } from "@mui/material";
+import { format } from "date-fns";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function preventDefault(event) {
   event.preventDefault();
 }
 
-export default function Approvals() {
+const Approvals = ({ approvals, onApprove, onView, onReject, loading }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>Timesheet Approvals</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>
-              <Checkbox />
-            </TableCell>
+            <TableCell>Status</TableCell>
             <TableCell>Name</TableCell>
             <TableCell>Period</TableCell>
             <TableCell>Date Submitted</TableCell>
@@ -93,27 +39,44 @@ export default function Approvals() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
+          {approvals.map((approval) => (
+            <TableRow key={approval.id}>
+              <TableCell>{approval.current_status}</TableCell>
+              <TableCell>{approval.created_by_full_name}</TableCell>
+              <TableCell>{approval.period_name}</TableCell>
               <TableCell>
-                <Checkbox />
+                {format(new Date(approval.created_at), "dd-MM-yy")}
               </TableCell>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>{row.period}</TableCell>
-              <TableCell>{row.date_submitted}</TableCell>
               <TableCell>
-                <Chip color="success" label={row.total_hours} />
+                <Chip color="success" label={approval.total_hours} />
               </TableCell>
-              <TableCell>{row.leave_taken}</TableCell>
+              <TableCell>{approval.leave_days}</TableCell>
               <TableCell align="right">
                 <Tooltip title="View">
-                  <VisibilityIcon />
+                  <IconButton onClick={() => onView(approval.id)}>
+                    <VisibilityIcon />
+                  </IconButton>
                 </Tooltip>
                 <Tooltip title="Approve">
-                  <CheckCircleIcon color="primary" />
+                  <IconButton
+                    onClick={() => onApprove(approval.id)}
+                    color="primary"
+                    disabled={loading[approval.id]} // Disable button while loading
+                  >
+                    {loading[approval.id] ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      <CheckCircleIcon />
+                    )}
+                  </IconButton>
                 </Tooltip>
                 <Tooltip title="Reject">
-                  <CancelIcon color="error" />
+                  <IconButton
+                    onClick={() => onReject(approval.id)}
+                    color="primary"
+                  >
+                    <CancelIcon color="error" />
+                  </IconButton>
                 </Tooltip>
               </TableCell>
             </TableRow>
@@ -122,4 +85,6 @@ export default function Approvals() {
       </Table>
     </Box>
   );
-}
+};
+
+export default Approvals;
