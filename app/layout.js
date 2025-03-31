@@ -1,5 +1,5 @@
 // "use client";
-import { Inter } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import ThemeRegistry from "../utils/ThemeRegistry";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -12,7 +12,7 @@ import LayoutX from "@/../../components/LayoutX";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 
-const inter = Inter({ subsets: ["latin"] });
+const roboto = Roboto({ subsets: ["latin"], weight: ["400", "700"] });
 
 // export const metadata = {
 //   title: "R4H ESS",
@@ -36,7 +36,7 @@ export default async function RootLayout({ children }) {
             content="R4H Employee Self Service System"
           ></meta>
         </head>
-        <body className={inter.className}>
+        <body className={roboto.className}>
           <ThemeRegistry options={{ key: "mui-theme" }}>
             <Box sx={{ display: "flex" }}>
               <CssBaseline />

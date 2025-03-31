@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { Box, Button, CircularProgress, Stack } from "@mui/material";
+import ApprovalsWaitingCard from "../../components/ApprovalsCard";
+import DaysUntilTimesheetCard from "../../components/DaysUntilTimesheet";
 import axios from "axios";
 
 export default function Home() {
@@ -47,6 +49,10 @@ export default function Home() {
           <Button color={"error"} onClick={() => signOut({ callbackUrl: "/" })}>
             Sign out
           </Button>
+        </Stack>
+        <Stack direction={"row"} spacing={3}>
+          <ApprovalsWaitingCard />
+          <DaysUntilTimesheetCard />
         </Stack>
       </Box>
     );

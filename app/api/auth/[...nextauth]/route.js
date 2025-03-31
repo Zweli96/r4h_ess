@@ -35,6 +35,7 @@ export const authOptions = {
       // The data returned from this function is passed forward as the
       // `user` variable to the signIn() and jwt() callback
       async authorize(credentials, req) {
+        console.log("Backend URL:", process.env.NEXTAUTH_BACKEND_URL);
         try {
           const response = await axios({
             url: process.env.NEXTAUTH_BACKEND_URL + "auth/login/",
