@@ -1,403 +1,409 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Key } from "@mui/icons-material";
-import Totals from "@../../../components/Totals";
-import PeriodSelector from "@../../../components/PeriodSelector";
-import Select from "@mui/material/Select";
-import Grid from "@mui/material/Unstable_Grid2";
-import Box from "@mui/material/Box";
-import axios from "axios";
-import { getSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import React, { useState,useEffect } from 'react';
+import {getFullDateRange,chunkDaysByWeek,calcChunkGrandTotal,calcColumnTotal,calcChunkLOE} from "@../../../utils/utils";
+import TimeSheetWeek from "../../components/TimeSheetWeek"
+import TimesheetSummary from "../../components/TimesheetSammary"
+import TimesheetSelectors from "../../components/TimesheetSelectors"
 
-function formatDate(dateString) {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import {axiosInstance} from "@../../../app/api/axiosInstance"
+import {
+  Container,
+  Typography,
+  Box,
+  TextField,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Button,
+  Select,
+  MenuItem,
+  TableContainer,
+  Paper,
+} from '@mui/material';
 
-  const date = new Date(dateString);
-  const dayOfWeek = days[date.getDay()];
-  const dayOfMonth = date.getDate();
-  const month = months[date.getMonth()];
 
-  return `${dayOfWeek} ${dayOfMonth} ${month}`;
+//declaring actities and loa activities
+let LOE_ACTIVITIES = [];
+let ACTIVITIES =[];
+
+
+
+//data input for all activities
+function initChunkData(numDays) {
+  return ACTIVITIES.map((activity) => ({
+    activity,
+    daily: Array(numDays).fill(''),
+    charge: '',
+  }));
 }
 
-const type_leave = "leave";
-const type_projects = "projects";
+export default function TimesheetPage() {
 
-export default function App() {
-  const [period, setPeriod] = useState(""); // this is the period selector
-  const [loading, setLoading] = useState(false); // this is the universal loading
-  const [timesheet, setTimesheet] = useState(""); // This is now for populating the actual timesheet
-  const [error, setError] = useState({});
-  async function submitTimesheet() {
-    const session = await getSession();
-  }
+  //declaring session and other variables
+ const { data: session, status } = useSession({ required: true });
+    
 
-  // When a period is selected this runs
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [chunkedDays, setChunkedDays] = useState([]);
+  const [chunkedData, setChunkedData] = useState([]);
+  const [selectedActivities, setSelectedActivities] = useState([]);
+  const [activities, setActivities] = useState([]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      console.log(`The period is ${period}`);
-      const session = await getSession();
-      if (session) {
-        try {
-          setLoading(true);
-          const response = await axios({
-            method: "get",
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}timesheets/periods/employee/${period}`,
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          });
-          const result = await response.data;
-          setLoading(false);
+    fetchActivities();
+  }, []);
+  
 
-          // Update the timesheet state after data is fetched
-          if (result.status) {
-            setTimesheet(result.timesheet);
-          } else {
-            setTimesheet(result);
+  //getting activities from database
+  const fetchActivities = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/timesheets/activities/');
+      const data = await response.json();
+      setActivities(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
+  //assigning loa activities from database
+ const loeActivities = activities.filter((activity) => activity.is_loe);
+ LOE_ACTIVITIES = loeActivities.map((activity) => activity.name);
+
+
+ //filtering activities with activity name
+const projectActivities = activities.filter((activity) => activity.type === 'PROJECT');
+  
+ 
+  
+  //maping database actity to activity list
+ ACTIVITIES =  activities.map((activity) => activity.name);
+
+
+ //selecting month
+  const handleMonthChange = (e) => {
+    //getting value of selected month
+    const val = e.target.value;
+    setSelectedMonth(val);
+    if (!val) {
+      setChunkedDays([]);
+      setChunkedData([]);
+      return;
+    }
+
+    //assigning year and month from selected month value
+    const [yearStr, monthStr] = val.split('-');
+    const yearNum = parseInt(yearStr, 10);
+    const monthNum = parseInt(monthStr, 10);
+
+    //calling getfull date range with selecting year and month parameter
+    const allDays = getFullDateRange(yearNum, monthNum);
+    
+    //calling grouping of days function into weekes
+    const chunks = chunkDaysByWeek(allDays, 7);
+
+    //adding days in chunk days array
+    setChunkedDays(chunks);
+
+    //adding data in chunk days
+    const dataChunks = chunks.map((chunk) => initChunkData(chunk.length));
+    setChunkedData(dataChunks);
+  };
+
+  //selecting activity 
+  const handleActivityChange = (e) => {
+    const value = e.target.value;
+    setSelectedActivities(typeof value === 'string' ? value.split(',') : value);
+  };
+
+//cell value change
+  const handleCellChange = (chunkIndex, rowIndex, dayIndex, value) => {
+    const updated = [...chunkedData];
+
+    //value entered in input
+    updated[chunkIndex][rowIndex].daily[dayIndex] = value;
+
+    //adding daily value in chunkdata array
+    setChunkedData(updated);
+  };
+  
+  
+//charge change
+  const handleChargeChange = (chunkIndex, rowIndex, value) => {
+    const updated = [...chunkedData];
+
+    //getting charge value
+    updated[chunkIndex][rowIndex].charge = value;
+
+    //adding charge chunk data array
+    setChunkedData(updated);
+  };
+
+  // Calculate total hours for a row
+  const calcRowTotal = (row) => {
+    return row.daily.reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
+  };
+
+  // Calculate total for a single column across all rows in a chunk
+  const calcColumnTotal = (chunkRows, dayIndex) => {
+    return chunkRows.reduce((sum, row) => sum + (parseFloat(row.daily[dayIndex]) || 0), 0);
+  };
+
+  // Calculate the grand total of a chunk
+  const calcChunkGrandTotal = (chunkRows) => {
+    return chunkRows.reduce((sum, row) => sum + calcRowTotal(row), 0);
+  };
+
+  
+
+
+  // Calculate total hours for applicable LOE activities in a chunk
+const calcChunkLOE = (chunkRows, chunkTotal) => {
+  const loeHours = chunkRows.reduce((sum, row) => {
+    if (LOE_ACTIVITIES.includes(row.activity)) {
+      return sum + calcRowTotal(row);
+    }
+    return sum;
+  }, 0);
+  return chunkTotal > 0 ? (loeHours / chunkTotal) * 100 : 0;
+};
+
+
+
+const projectNames = projectActivities.map((activity) => activity.name);
+
+const calculateTotals = () => {
+  const projectTotals = {};
+  let totalWorkHours = 0;
+  let totalLeaveHours = 0;
+  let totalLeaveDays = 0;
+  let totalWorkingDays = 0;
+  let totalDays = chunkedDays.flat().length;
+  let totalLOEHours = 0;
+
+
+  for (let i = 0; i < chunkedDays.length; i++) {
+    const daysChunk = chunkedDays[i];
+    const chunkRows = chunkedData[i] || [];
+  
+    for (let dayIdx = 0; dayIdx < daysChunk.length; dayIdx++) {
+      const day = daysChunk[dayIdx];
+  
+      if (day.dayOfWeek === 0 || day.dayOfWeek === 6) {
+        continue; // skip weekends
+      }
+  
+      let dailyWorkHours = 0;
+      let dailyLeaveHours = 0;
+  
+      for (let rowIdx = 0; rowIdx < chunkRows.length; rowIdx++) {
+        const row = chunkRows[rowIdx];
+        const hours = parseFloat(row.daily[dayIdx]) || 0;
+        const projectName = row.activity;
+  
+        if (!projectTotals[projectName]) {
+          projectTotals[projectName] = 0;
+        }
+  
+        projectTotals[projectName] += hours;
+  
+        if (row.activity.includes('Leave')) {
+          dailyLeaveHours += hours;
+          totalLeaveHours += hours;
+        } else {
+          dailyWorkHours += hours;
+          totalWorkHours += hours;
+          totalLOEHours += hours;
+        }
+      }
+  
+      if (dailyWorkHours > 0) {
+        totalWorkingDays++;
+      }
+  
+      if (dailyLeaveHours > 0) {
+        totalLeaveDays++;
+      }
+    }
+  }
+  
+
+  const totalHours = totalWorkHours + totalLeaveHours;
+  const totalLOE = (totalLOEHours / totalHours) * 100 || 0;
+  const leavePercentage = (totalLeaveHours / totalHours) * 100 || 0;
+  totalDays = totalLeaveDays + totalWorkingDays
+  const projectPercentages = {};
+
+
+  //projects names with its percentage
+
+  for (let i = 0; i < projectNames.length; i++) {
+    let projectName = projectNames[i];
+    projectPercentages[projectName] = (projectTotals[projectName] / totalHours) * 100;
+  }
+
+  return {
+    projectPercentages,
+    totalWorkHours,
+    totalLeaveHours,
+    totalLeaveDays,
+    totalWorkingDays,
+    totalDays ,
+    totalLOE: totalLOE.toFixed(2),
+    leavePercentage: leavePercentage.toFixed(2),
+  };
+};
+
+const totals = calculateTotals();
+
+const handleSubmit = () => {
+  if (!selectedMonth) {
+    alert('Please select a month first.');
+    return;
+  }
+
+  const [year, month] = selectedMonth.split('-');
+  const period = `${month}/${year}`;
+
+  let missingDates = [];
+  const timesheet = {};
+
+  for (let i = 0; i < chunkedDays.length; i++) {
+    const daysChunk = chunkedDays[i];
+    const chunkRows = chunkedData[i] || [];
+
+    for (let dayIdx = 0; dayIdx < daysChunk.length; dayIdx++) {
+      const day = daysChunk[dayIdx];
+
+      // skipping empty weekends
+      if (day.dayOfWeek === 0 || day.dayOfWeek === 6) continue;
+
+      let hasValue = false;
+
+      // checking value in row index
+      for (let rowIdx = 0; rowIdx < chunkRows.length; rowIdx++) {
+        const row = chunkRows[rowIdx];
+
+        if (row.daily[dayIdx] !== '') {
+          // with value
+          hasValue = true;
+        }
+
+        // timesheet submission
+        if (day.dateStr) {
+          if (!timesheet[day.dateStr]) {
+            timesheet[day.dateStr] = { projects: {}, leave: {} };
           }
-        } catch (error) {
-          console.error("Error fetching data:", error);
-          setLoading(false);
+
+          const hours = row.daily[dayIdx];
+
+          if (LOE_ACTIVITIES.includes(row.activity) && row.activity !== 'Public Leave') {
+            timesheet[day.dateStr].projects[row.activity] = hours || '';
+          } else {
+            timesheet[day.dateStr].leave[row.activity] = hours || '';
+          }
         }
       }
-    };
 
-    if (period) {
-      fetchData();
+      // without value
+      if (!hasValue && day.dateStr) {
+        let correctedDate = new Date(day.dateStr);
+        if (!isNaN(correctedDate)) {
+          correctedDate.setDate(correctedDate.getDate() + 1);
+          let correctedDateStr = correctedDate.toISOString().split('T')[0];
+          missingDates.push(correctedDateStr);
+        } else {
+          console.error("Invalid date detected:", day.dateStr);
+        }
+      }
     }
-  }, [period]);
+  }
 
-  // This is for the period selector
-  const handlePeriodChange = (value) => {
-    setPeriod(value);
+  // alerting user if their are empty date in json format of those dates
+  if (missingDates.length > 0) {
+    alert(`Please fill in hours for the following dates: ${missingDates.join(', ')}`);
+    return;
+  }
+
+  // assigning calculated totals to totals variable
+  const totals = calculateTotals();
+
+  // whole data object for timesheet submission to api
+  const data = {
+    period,
+    total_hours: totals.totalWorkHours + totals.totalLeaveHours,
+    leave_days: totals.totalLeaveDays,
+    working_days: totals.totalWorkingDays,
+    filled_timesheet: timesheet,
+    created_by: session.user.pk
   };
 
-  function countActiveDays(timesheet) {
-    let activeDays = 0;
-
-    for (const day in timesheet) {
-      const entry = timesheet[day];
-      const { projects, leave } = entry;
-
-      const projectHours = Object.values(projects).reduce(
-        (sum, val) => sum + val,
-        0
-      );
-      const leaveHours = Object.values(leave).reduce(
-        (sum, val) => sum + val,
-        0
-      );
-
-      if (projectHours > 0 || leaveHours > 0) {
-        activeDays++;
+  fetch('http://127.0.0.1:8000/api/timesheets/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.id) {
+        alert('Timesheet submitted successfully!');
+      } else {
+        alert('Submission failed. Please check your data and try again.');
       }
-    }
-
-    return activeDays;
-  }
-
-  function sumAllHours(timesheet) {
-    let totalHours = 0;
-
-    for (const day in timesheet) {
-      const entry = timesheet[day];
-      const { projects, leave } = entry;
-
-      const projectHours = Object.values(projects)
-        .map((val) => parseFloat(val) || 0)
-        .reduce((sum, val) => sum + val, 0);
-      const leaveHours = Object.values(leave)
-        .map((val) => parseFloat(val) || 0)
-        .reduce((sum, val) => sum + val, 0);
-
-      totalHours += projectHours + leaveHours;
-    }
-
-    // Determine if the total hours should be an integer or a float with one decimal place
-    return totalHours % 1 === 0 ? totalHours.toFixed(0) : totalHours.toFixed(1);
-  }
-
-  function countLeaveDays(timesheet) {
-    let leaveDays = 0;
-
-    for (const day in timesheet) {
-      const entry = timesheet[day];
-      const { leave } = entry;
-
-      const leaveHours = Object.values(leave)
-        .map((val) => parseFloat(val) || 0)
-        .reduce((sum, val) => sum + val, 0);
-
-      if (leaveHours > 0) {
-        leaveDays++;
-      }
-    }
-
-    return leaveDays;
-  }
-
-  function countLeaveDays(timesheet) {
-    let leaveDays = 0;
-
-    for (const day in timesheet) {
-      const entry = timesheet[day];
-      const { leave } = entry;
-
-      const leaveHours = Object.values(leave)
-        .map((val) => parseFloat(val) || 0)
-        .reduce((sum, val) => sum + val, 0);
-
-      if (leaveHours > 0) {
-        leaveDays++;
-      }
-    }
-
-    return leaveDays;
-  }
-
-  function calculateProjectPercentages(timesheet) {
-    const totalProjectHours = {};
-    let totalHoursWorked = 0;
-
-    for (const day in timesheet) {
-      const { projects } = timesheet[day];
-
-      for (const project in projects) {
-        const hours = parseFloat(projects[project]) || 0;
-        totalProjectHours[project] = (totalProjectHours[project] || 0) + hours;
-        totalHoursWorked += hours;
-      }
-    }
-
-    const projectPercentages = {};
-    for (const project in totalProjectHours) {
-      const percentage = (totalProjectHours[project] / totalHoursWorked) * 100;
-      projectPercentages[project] = percentage.toFixed(1); // one decimal place
-    }
-
-    return projectPercentages;
-  }
-
-  const daysTotal = Object.keys(timesheet).length;
-  const daysFilled = countActiveDays(timesheet);
-  const hoursFilled = sumAllHours(timesheet);
-  const hoursTotal = 176;
-  const leaveDays = countLeaveDays(timesheet);
-  const levelOfEffort = calculateProjectPercentages(timesheet);
-
-  const handleChange = (dayId, hourType, hourName, value) => {
-    setTimesheet((prevTimesheet) => {
-      if (hourType === "projects") {
-        const updatedTimesheet = { ...prevTimesheet };
-        const day = updatedTimesheet[dayId];
-        const updatedDay = { ...day };
-        const type = updatedDay[hourType];
-        const updatedType = { ...type };
-        updatedType[hourName] = value;
-        updatedDay[hourType] = updatedType;
-        updatedTimesheet[dayId] = updatedDay;
-        console.log(updatedTimesheet);
-        return updatedTimesheet;
-      }
-      if (hourType === "leave") {
-        const updatedTimesheet = { ...prevTimesheet };
-        const day = updatedTimesheet[dayId];
-        const updatedDay = { ...day };
-        const type = updatedDay[hourType];
-        let updatedType = { ...type };
-        updatedType = Object.keys(updatedType).reduce(
-          (acc, key) => ({ ...acc, [key]: 0 }),
-          {}
-        );
-        if (hourName) {
-          updatedType = {
-            [hourName]: value,
-          };
-        }
-        updatedDay[hourType] = updatedType;
-        updatedTimesheet[dayId] = updatedDay;
-        console.log(updatedTimesheet);
-        return updatedTimesheet;
-      }
+      console.log('Response:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+      alert('An error occurred while submitting the timesheet. Please try again.');
     });
-  };
+};
 
-  const calculateTotalHours = (day) => {
-    let total = 0;
-    for (const project in day.projects) {
-      total += Number(day.projects[project]);
-    }
-    for (const leave in day.leave) {
-      total += Number(day.leave[leave]);
-    }
-    return total;
-  };
 
   return (
-    <Box sx={{ flexGrow: 1, mr: 2 }}>
-      <Grid container spacing={2} sx={{ mb: 2 }} alignItems="center">
-        <Grid item xs={12} sm={4}>
-          <h2>Submit Timesheet</h2>
-        </Grid>
-        <Grid item xs={false} sm={4}></Grid>
-        <Grid item xs={12} sm={4}>
-          <PeriodSelector setPeriod={handlePeriodChange} value={period} />
-        </Grid>
-        <Grid item xs={12}>
-          <hr />
-        </Grid>
-      </Grid>
-      {timesheet ? (
-        <>
-          <Totals
-            daysTotal={daysTotal}
-            daysFilled={daysFilled}
-            hoursFilled={hoursFilled}
-            hoursTotal={hoursTotal}
-            leaveDays={leaveDays}
-            levelOfEffort={levelOfEffort}
-          />
-          <>
-            {Object.keys(timesheet).map((key) => (
-              <DayCard
-                key={key}
-                dayId={key}
-                day={timesheet[key].date}
-                leave={timesheet[key].leave}
-                projects={timesheet[key].projects}
-                handleChange={handleChange}
-                totalHours={calculateTotalHours(timesheet[key])}
-              />
-            ))}
-          </>
-        </>
-      ) : (
-        <div>
-          <h3>No timesheet selected, please select a timesheet</h3>
-        </div>
-      )}
-    </Box>
-  );
-}
-
-function DayCard({ dayId, day, projects, leave, handleChange, totalHours }) {
-  const [hover, setHover] = useState(false);
-  const [selectedLeaveType, setSelectedLeaveType] = useState("select_leave");
-  const [leaveSelected, setLeaveSelected] = useState(false);
-
-  function handleSelectChange(e, dayID) {
-    const selectedValue = e.target.value;
-    setSelectedLeaveType(selectedValue);
-    handleChange(dayID, "leave");
-    if (selectedValue === "select_leave") {
-      setLeaveSelected(false);
-    } else {
-      setLeaveSelected(true);
-    }
-  }
-
-  let className = "daycard";
-  if (hover) {
-    className += " hover";
-  }
-
-  return (
-    <div
-      className="daycard"
-      onPointerEnter={() => setHover(true)}
-      onPointerLeave={() => setHover(false)}
-    >
-      <text className="dateTitle">{formatDate(day)}</text>
-      {Object.keys(projects).map((item, index) => (
-        <Input
-          key={index}
-          label={item}
-          displayLabel={item}
-          value={projects[item]}
-          fieldType={"projects"}
-          dayId={dayId}
-          handleChange={handleChange}
+    <Container maxWidth="xl" sx={{ mt: 4 }}>
+      <Typography variant="h5" gutterBottom>
+        Timesheet (Monthly)
+      </Typography>
+      <TimesheetSelectors
+        selectedMonth={selectedMonth}
+        handleMonthChange={handleMonthChange}
+        selectedActivities={selectedActivities}
+        handleActivityChange={handleActivityChange}
+        ACTIVITIES={ACTIVITIES}
+      />
+      {chunkedDays.map((daysChunk, i) => (
+        <TimeSheetWeek
+          key={`daysChunk-${i}`}
+          daysChunk={daysChunk}
+          chunkRows={chunkedData[i] || []}
+          chunkIndex={i}
+          handleCellChange={handleCellChange}
+          handleChargeChange={handleChargeChange}
+          LOE_ACTIVITIES={LOE_ACTIVITIES}
+          calcRowTotal={calcRowTotal}
+          calcColumnTotal={calcColumnTotal}
+          calcChunkGrandTotal={calcChunkGrandTotal}
+          calcChunkLOE={calcChunkLOE}
+          selectedActivities={selectedActivities}
         />
       ))}
-      <select
-        onChange={(e) => handleSelectChange(e, dayId)}
-        value={selectedLeaveType}
-      >
-        <option value="select_leave" selected>
-          Select Leave
-        </option>
-        <option value="sick_leave">Sick Leave</option>
-        <option value="study_leave">Study Leave</option>
-        <option value="maternity_paternity_leave">
-          Maternity_Paternity Leave
-        </option>
-        <option value="compassionate_leave">Compassionate Leave</option>
-        <option value="unpaid_leave">Unpaid Leave</option>
-        <option value="administrative_leave">Administrative Leave</option>
-        <option value="public_leave">Public Leave</option>
-        <option value="annual_leave">Annual Leave</option>
-      </select>
 
-      <Input // Use selectedLeaveType as key to track the specific input
-        label={selectedLeaveType}
-        displayLabel={"Leave"}
-        value={leave[selectedLeaveType] ?? ""} // Value of the selected leave type or empty string if it doesn't exist
-        fieldType={"leave"}
-        handleChange={handleChange}
-        dayId={dayId}
-        leaveSelected={leaveSelected}
-      />
-
-      <div className="dayCardTotal">
-        {" "}
-        <b>{totalHours}</b> hours
-      </div>
-    </div>
+      
+      {chunkedDays.length > 0 && (
+        <TimesheetSummary
+          totals={totals}
+          chunkedData={chunkedData}
+          projectNames={projectNames}
+          calcChunkGrandTotal={calcChunkGrandTotal}
+          handleSubmit={handleSubmit}
+        />
+      )}
+    </Container>
   );
-}
-
-function Input({
-  label,
-  displayLabel,
-  value,
-  fieldType,
-  dayId,
-  handleChange,
-  leaveSelected,
-}) {
-  const isDisabled = fieldType === "leave" && !leaveSelected;
-
-  return (
-    <label>
-      {displayLabel}
-      {"   "}
-      <input
-        value={value}
-        onChange={(e) => handleChange(dayId, fieldType, label, e.target.value)}
-        // dayId, hourType, hourName, value
-        fieldType={fieldType}
-        type="number"
-        className="resizedTextbox"
-        min={0}
-        max={24}
-        step={0.5}
-        disabled={isDisabled}
-      />
-    </label>
-  );
+  
 }
