@@ -12,6 +12,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import ESSIcon from "@../../../public/ESS.svg";
 import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 
 const getBackgroundColor = (theme) =>
   theme.palette.mode === "light"
@@ -20,14 +21,45 @@ const getBackgroundColor = (theme) =>
 
 export default function SignInSide() {
   const [userInfo, setUserInfo] = useState({ username: "", password: "" });
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({
+    username: false,
+    password: false,
+  }); // Track individual field errors
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(false);
+    setErrorMessage("");
+    setFieldErrors({ username: false, password: false });
+    // Check if fields are empty
+    if (!userInfo.username || !userInfo.password) {
+      setError(true);
+      setErrorMessage("Please fill in all required fields");
+      setFieldErrors({
+        username: !userInfo.username,
+        password: !userInfo.password,
+      });
+      return;
+    }
     const res = await signIn("credentials", {
       username: userInfo.username,
       password: userInfo.password,
-      redirect: true,
-      callbackUrl: "/",
+      redirect: false,
     });
+
+    if (res?.error === "Service Unavailable") {
+      setError(true);
+      setErrorMessage(
+        "Service temporarily unavailable, please try again later"
+      );
+    } else if (res?.error === "CredentialsSignin") {
+      setError(true);
+      setErrorMessage("Incorrect username or password");
+    } else if (!res?.error) {
+      // Redirect to callbackUrl on success
+      window.location.href = "/";
+    }
 
     console.log(res);
   };
@@ -82,6 +114,12 @@ export default function SignInSide() {
             onSubmit={handleSubmit}
             sx={{ mt: 1 }}
           >
+            {/* Display error message if error exists */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {errorMessage}
+              </Alert>
+            )}
             <TextField
               margin="normal"
               required
@@ -96,6 +134,8 @@ export default function SignInSide() {
               onChange={({ target }) =>
                 setUserInfo({ ...userInfo, username: target.value })
               }
+              error={error} // Highlight field in red if error
+              helperText={fieldErrors.username ? "Username is required" : ""}
             />
             <TextField
               margin="normal"
@@ -110,6 +150,8 @@ export default function SignInSide() {
               onChange={({ target }) =>
                 setUserInfo({ ...userInfo, password: target.value })
               }
+              error={error} // Highlight field in red if error
+              helperText={fieldErrors.password ? "Password is required" : ""} // Error message
             />
             <Link>
               <Button
@@ -117,6 +159,7 @@ export default function SignInSide() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                // disabled={!userInfo.username || !userInfo.password}
               >
                 Sign In
               </Button>

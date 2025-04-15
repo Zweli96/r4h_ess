@@ -17,7 +17,7 @@ export default function Layout() {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <Navbar toggleDrawer={toggleDrawer} open={open} />
       <AppDrawer open={open} toggleDrawer={toggleDrawer} />
     </Box>

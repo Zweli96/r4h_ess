@@ -15,6 +15,10 @@ import Menu from "@mui/material/Menu";
 import Badge from "@mui/material/Badge";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { styled } from "@mui/material/styles";
+import Link from "next/link"; // Import Next.js Link
+import LogoutIcon from "@mui/icons-material/Logout"; // Import LogoutIcon
+import Tooltip from "@mui/material/Tooltip";
+import { signOut, useSession } from "next-auth/react";
 
 const drawerWidth = 240;
 const AppBar = styled(MuiAppBar, {
@@ -36,6 +40,7 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 export default function Navbar({ toggleDrawer, open, drawerWidth }) {
+  const { data: session, status } = useSession({ required: true });
   return (
     <AppBar position="absolute" open={open}>
       <Toolbar
@@ -62,13 +67,30 @@ export default function Navbar({ toggleDrawer, open, drawerWidth }) {
           noWrap
           sx={{ flexGrow: 1 }}
         >
-          R4H ESS
+          <Link
+            href="/"
+            passHref
+            style={{ textDecoration: "none", color: "inherit" }}
+          >
+            R4H ESS
+          </Link>
         </Typography>
-        <IconButton color="inherit">
+        {/* <IconButton color="inherit">
           <Badge badgeContent={4} color="secondary">
             <NotificationsIcon />
           </Badge>
-        </IconButton>
+        </IconButton> */}
+        <Typography>
+          Logged in as {session?.user?.username || "unknown"}
+        </Typography>
+        <Tooltip title="Logout">
+          <IconButton
+            color="inherit"
+            onClick={() => signOut({ callbackUrl: "/" })}
+          >
+            <LogoutIcon />
+          </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );

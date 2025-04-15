@@ -1,25 +1,16 @@
 "use client";
 import Approvals from "../../components/Approvals";
+import RejectTimesheetDialog from "../../components/RejectTimesheetDialog";
 import Box from "@mui/material/Box";
 import Nav from "../../components/Navbar";
 import React, { useState, useEffect } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import { fetchApprovals, submitApproval } from "../api/api";
-// Generate Order Data
-function createData(
-  id,
-  name,
-  period,
-  date_submitted,
-  total_hours,
-  leave_taken
-) {
-  return { id, name, period, date_submitted, total_hours, leave_taken };
-}
+import { fetchApprovals, submitApproval, submitRejection } from "../api/api";
 
 const page = () => {
   const [approvals, setApprovals] = useState([]);
+  const [selectedRejectTimesheet, setSelectedRejectTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [loading, setLoading] = useState({});
   const [error, setError] = useState(null);
@@ -28,20 +19,51 @@ const page = () => {
     message: "",
     type: "success",
   });
+  const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
+
+  const handleCloseRejectDialog = () => {
+    setRejectDialogOpen(false);
+  };
 
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
-  const handleReject = async (id) => {
+  const handleReject = async (id, rejection_reason) => {
+    setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
     try {
-      await fetch(`/api/approvals/${id}/reject`, { method: "POST" });
+      const response = await submitRejection(id, rejection_reason);
+
+      if (response.status !== 200) {
+        throw new Error(
+          `Rejection failed: ${response.status}: ${
+            response.data.message || "Unknown error"
+          }`
+        );
+      }
+
+      setSnackbar({
+        open: true,
+        message: "Timesheet rejected successfully!",
+        type: "success",
+      });
       setRefresh((prev) => !prev); // Trigger a refresh
+      setRejectDialogOpen(false);
     } catch (error) {
-      console.error("Error rejecting:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to approve timesheet.",
+        type: "error",
+      });
+    } finally {
+      setLoading((prev) => ({ ...prev, [id]: false })); // Reset loading
     }
   };
 
+  const handleOpenRejectDialog = (timesheet) => {
+    setSelectedRejectTimesheet(timesheet);
+    setRejectDialogOpen(true);
+  };
+
   const handleApprove = async (id) => {
-    debugger;
     setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
     try {
       const response = await submitApproval(id);
@@ -99,7 +121,7 @@ const page = () => {
       <Approvals
         approvals={approvals}
         onApprove={handleApprove}
-        onReject={() => console.log("Reject handler")}
+        onReject={handleOpenRejectDialog}
         onView={() => console.log("View handler")}
         loading={loading}
       />
@@ -117,6 +139,16 @@ const page = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+      <RejectTimesheetDialog
+        open={rejectDialogOpen}
+        onClose={handleCloseRejectDialog}
+        onSubmit={handleReject}
+        rejectTimesheetId={selectedRejectTimesheet?.id}
+        title={`Reject Timesheet: ${
+          selectedRejectTimesheet?.created_by_full_name || ""
+        } - ${selectedRejectTimesheet?.period_name || ""}`}
+        contentText="Please enter your reason for rejecting this timesheet."
+      />
     </Box>
   );
 };

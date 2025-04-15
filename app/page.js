@@ -13,7 +13,7 @@ const Protected = () => {
     if (status === "unauthenticated") {
       redirect("/signin");
     } else if (status === "authenticated") {
-      redirect("/profile");
+      redirect("/dashboard");
     }
   }, [status]);
 

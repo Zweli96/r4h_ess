@@ -28,7 +28,7 @@ export default async function RootLayout({ children }) {
   const session = await getSession();
   return (
     <SessionProvider session={session}>
-      <html lang="en">
+      <html lang="en" style={{ height: "100%" }}>
         <head>
           <title>R4H ESS</title>
           <meta
@@ -36,17 +36,40 @@ export default async function RootLayout({ children }) {
             content="R4H Employee Self Service System"
           ></meta>
         </head>
-        <body className={roboto.className}>
+        <body
+          className={roboto.className}
+          style={{ height: "100%", margin: 0 }}
+        >
           <ThemeRegistry options={{ key: "mui-theme" }}>
-            <Box sx={{ display: "flex" }}>
+            <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
               <CssBaseline />
               {session ? (
                 <>
                   <LayoutX />
-                  <Container sx={{ mt: 10, mb: 4 }}>{children}</Container>
+                  <Box
+                    component="main"
+                    sx={{
+                      flexGrow: 1,
+                      minHeight: "100vh",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Container
+                      sx={{
+                        mt: 10,
+                        mb: 4,
+                        flexGrow: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      {children}
+                    </Container>
+                  </Box>
                 </>
               ) : (
-                children
+                <Box sx={{ minHeight: "100vh", width: "100%" }}>{children}</Box>
               )}
               {/*  */}
             </Box>

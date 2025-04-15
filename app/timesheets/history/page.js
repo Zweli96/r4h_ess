@@ -1,88 +1,159 @@
 "use client";
-import { useState } from "react";
+import MyTimesheets from "../../../components/MyTimesheets";
+import RejectTimesheetDialog from "../../../components/RejectTimesheetDialog";
+import Box from "@mui/material/Box";
+import React, { useState, useEffect } from "react";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  Button,
-} from "@mui/material";
+  fetchMyTimesheets,
+  submitApproval,
+  submitRejection,
+} from "../../api/api";
 
-export default function DataTable() {
-  const [rows, setRows] = useState([
-    { id: "staff_1", name: "Staff 1", workingDays: 0, leaveDays: 0 },
-    { id: "staff_2", name: "Staff 2", workingDays: 0, leaveDays: 0 },
-  ]);
+const page = () => {
+  const [myTimesheets, setMyTimesheets] = useState([]);
+  const [selectedRejectTimesheet, setSelectedRejectTimesheet] = useState(null);
+  const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState({});
+  const [error, setError] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    type: "success",
+  });
+  const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
 
-  const handleChange = (id, field, value) => {
-    const updatedRows = rows.map((row) =>
-      row.id === id ? { ...row, [field]: Number(value) || 0 } : row
-    );
-    setRows(updatedRows);
+  const handleCloseRejectDialog = () => {
+    setRejectDialogOpen(false);
   };
 
-  const handleSubmit = () => {
-    const tableData = rows.reduce((acc, row) => {
-      acc[row.id] = {
-        leave_days: row.leaveDays,
-        working_days: row.workingDays,
-        total: row.workingDays + row.leaveDays,
-      };
-      return acc;
-    }, {});
-    console.log(JSON.stringify(tableData, null, 2));
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+
+  const handleReject = async (id, rejection_reason) => {
+    setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
+    try {
+      const response = await submitRejection(id, rejection_reason);
+
+      if (response.status !== 200) {
+        throw new Error(
+          `Rejection failed: ${response.status}: ${
+            response.data.message || "Unknown error"
+          }`
+        );
+      }
+
+      setSnackbar({
+        open: true,
+        message: "Timesheet rejected successfully!",
+        type: "success",
+      });
+      setRefresh((prev) => !prev); // Trigger a refresh
+      setRejectDialogOpen(false);
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to approve timesheet.",
+        type: "error",
+      });
+    } finally {
+      setLoading((prev) => ({ ...prev, [id]: false })); // Reset loading
+    }
   };
+
+  const handleOpenRejectDialog = (timesheet) => {
+    setSelectedRejectTimesheet(timesheet);
+    setRejectDialogOpen(true);
+  };
+
+  const handleApprove = async (id) => {
+    setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
+    try {
+      const response = await submitApproval(id);
+
+      if (response.status !== 200) {
+        throw new Error(
+          `Approval failed: ${response.status}: ${
+            response.data.message || "Unknown error"
+          }`
+        );
+      }
+
+      setSnackbar({
+        open: true,
+        message: "Timesheet approved successfully!",
+        type: "success",
+      });
+      setRefresh((prev) => !prev); // Trigger a refresh
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: "Failed to approve timesheet.",
+        type: "error",
+      });
+    } finally {
+      setLoading((prev) => ({ ...prev, [id]: false })); // Reset loading
+    }
+  };
+
+  const handleView = async (id) => {
+    try {
+      await fetch(`/api/approvals/${id}/view`, { method: "POST" });
+      setRefresh((prev) => !prev); // Trigger a refresh
+    } catch (error) {
+      console.error("Error viewing:", error);
+    }
+  };
+
+  useEffect(() => {
+    const loadMyTimesheets = async () => {
+      try {
+        const data = await fetchMyTimesheets();
+        setMyTimesheets(data);
+      } catch (error) {
+        setError("Error fetching timesheets");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadMyTimesheets();
+  }, [refresh]);
 
   return (
-    <TableContainer component={Paper} className="p-4">
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Staff</TableCell>
-            <TableCell>Days Worked</TableCell>
-            <TableCell>Leave Days</TableCell>
-            <TableCell>Total</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{row.name}</TableCell>
-              <TableCell>
-                <TextField
-                  type="number"
-                  value={row.workingDays}
-                  onChange={(e) =>
-                    handleChange(row.id, "workingDays", e.target.value)
-                  }
-                />
-              </TableCell>
-              <TableCell>
-                <TextField
-                  type="number"
-                  value={row.leaveDays}
-                  onChange={(e) =>
-                    handleChange(row.id, "leaveDays", e.target.value)
-                  }
-                />
-              </TableCell>
-              <TableCell>{row.workingDays + row.leaveDays}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSubmit}
-        className="mt-4"
+    <Box sx={{ display: "block" }}>
+      <MyTimesheets
+        timesheets={myTimesheets}
+        onApprove={handleApprove}
+        onReject={handleOpenRejectDialog}
+        onView={() => console.log("View handler")}
+        loading={loading}
+      />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        Log Data
-      </Button>
-    </TableContainer>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.type}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      <RejectTimesheetDialog
+        open={rejectDialogOpen}
+        onClose={handleCloseRejectDialog}
+        onSubmit={handleReject}
+        rejectTimesheetId={selectedRejectTimesheet?.id}
+        title={`Reject Timesheet: ${
+          selectedRejectTimesheet?.created_by_full_name || ""
+        } - ${selectedRejectTimesheet?.period_name || ""}`}
+        contentText="Please enter your reason for rejecting this timesheet."
+      />
+    </Box>
   );
-}
+};
+
+export default page;
