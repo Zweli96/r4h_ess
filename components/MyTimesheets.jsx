@@ -8,7 +8,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Title from "./Title";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import CancelIcon from "@mui/icons-material/Cancel";
+import InfoIcon from "@mui/icons-material/Info";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import Checkbox from "@mui/material/Checkbox";
 import Tooltip from "@mui/material/Tooltip";
@@ -23,63 +23,70 @@ function preventDefault(event) {
 }
 
 const BoldTableCell = (props) => (
-  <TableCell sx={{ fontWeight: "bold" }} {...props} />
+  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }} {...props} />
 );
 
-const Approvals = ({ approvals, onApprove, onView, onReject, loading }) => {
+const getStatusColor = (status) => {
+  switch (status) {
+    case "Submitted":
+      return "grey";
+    case "Rejected":
+      return "error";
+    case "Line Manager Approved":
+      return "info";
+    case "HR Approved":
+      return "success";
+    default:
+      return "default"; // Fallback color
+  }
+};
+
+const MyTimesheets = ({ timesheets, onApprove, onView, onReject, loading }) => {
   return (
     <Box sx={{ display: "block" }}>
-      <Title>Timesheet Approvals</Title>
+      <Title>My Timesheets</Title>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <BoldTableCell>Name</BoldTableCell>
             <BoldTableCell>Period</BoldTableCell>
             <BoldTableCell>Status</BoldTableCell>
             <BoldTableCell>Date Submitted</BoldTableCell>
             <BoldTableCell>Total Hours</BoldTableCell>
-            <BoldTableCell>Leave Days</BoldTableCell>
+            <BoldTableCell>Leave Taken</BoldTableCell>
             <BoldTableCell align="center">Action</BoldTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {approvals.map((approval) => (
-            <TableRow key={approval.id}>
-              <TableCell>{approval.created_by_full_name}</TableCell>
-              <TableCell>{approval.period}</TableCell>
-              <TableCell>{approval.current_status}</TableCell>
-              <TableCell>
-                {format(new Date(approval.created_at), "dd-MM-yy")}
+          {timesheets.map((timesheet) => (
+            <TableRow key={timesheet.id}>
+              <TableCell align="center">{timesheet.period}</TableCell>
+              <TableCell align="center">
+                <Chip
+                  color={getStatusColor(timesheet.current_status)}
+                  label={timesheet.current_status}
+                />
               </TableCell>
-              <TableCell>
-                <Chip color="success" label={approval.total_hours} />
+              <TableCell align="center">
+                {format(new Date(timesheet.created_at), "dd-MM-yy")}
               </TableCell>
-              <TableCell>{approval.leave_days}</TableCell>
+              <TableCell align="center">{timesheet.total_hours}</TableCell>
+              <TableCell align="center">{timesheet.leave_days}</TableCell>
               <TableCell align="center">
                 <Tooltip title="View">
-                  <IconButton onClick={() => onView(approval.id)}>
+                  <IconButton onClick={() => onView(timesheet.id)}>
                     <VisibilityIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title="Approve">
+                <Tooltip title="Information">
                   <IconButton
-                    onClick={() => onApprove(approval.id)}
-                    color="primary"
-                    disabled={loading[approval.id]} // Disable button while loading
+                    onClick={() => onApprove(timesheet.id)}
+                    disabled={loading[timesheet.id]} // Disable button while loading
                   >
-                    {loading[approval.id] ? (
+                    {loading[timesheet.id] ? (
                       <CircularProgress size={24} />
                     ) : (
-                      <CheckCircleIcon />
+                      <InfoIcon />
                     )}
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Reject">
-                  <IconButton
-                    onClick={() => onReject(approval)}
-                    color="primary"
-                  >
-                    <CancelIcon color="error" />
                   </IconButton>
                 </Tooltip>
               </TableCell>
@@ -91,4 +98,4 @@ const Approvals = ({ approvals, onApprove, onView, onReject, loading }) => {
   );
 };
 
-export default Approvals;
+export default MyTimesheets;

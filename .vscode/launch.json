@@ -10,6 +10,8 @@
     {
       "name": "Next.js: debug client-side",
       "type": "chrome",
+      "runtimeExecutable": "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+      "userDataDir": true,
       "request": "launch",
       "url": "http://localhost:3000"
     },

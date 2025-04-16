@@ -1,34 +1,24 @@
 import axiosInstance from "../api/axiosInstance";
 
- //getting activities from database
- export const fetchActivities = async () => {
+//getting activities from database
+export const fetchActivities = async () => {
   try {
-    const response = await axiosInstance.get('/timesheets/activities');
+    const response = await axiosInstance.get("/timesheets/activities");
     debugger;
-    const data =  response.json();
-    
-    console.log(data)
-    return(data)
+    const data = response.json();
+
+    console.log(data);
+    return data;
     // setActivities(data);
   } catch (error) {
     console.error(error);
   }
 };
 
-
-// const fetchActivities = async () => {
-//   try {
-//     const response = await fetch('http://localhost:8000/api/timesheets/activities/');
-//     const data = await response.json();
-//     setActivities(data);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
 export const fetchApprovals = async () => {
   try {
     const response = await axiosInstance.get("/timesheets/approvals");
-    console.log(response)
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error fetching approvals:", error);
@@ -38,7 +28,9 @@ export const fetchApprovals = async () => {
 
 export const submitApproval = async (id) => {
   try {
-    const response = await axiosInstance.put(`/timesheets/approvals/${id}`);
+    const response = await axiosInstance.put(
+      `/timesheets/approvals/approve/${id}`
+    );
     return response;
   } catch (error) {
     console.error("Error approving timesheet:", error);
@@ -46,4 +38,26 @@ export const submitApproval = async (id) => {
   }
 };
 
+export const submitRejection = async (id, rejection_reason) => {
+  try {
+    const response = await axiosInstance.put(
+      `/timesheets/approvals/reject/${id}`,
+      { rejection_reason }
+    );
+    return response;
+  } catch (error) {
+    console.error("Error rejecting timesheet:", error);
+    throw error;
+  }
+};
 
+export const fetchMyTimesheets = async () => {
+  try {
+    const response = await axiosInstance.get("/timesheets/timesheets");
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching timesheets:", error);
+    throw error;
+  }
+};

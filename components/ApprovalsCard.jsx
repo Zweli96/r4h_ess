@@ -1,32 +1,65 @@
+// components/ApprovalsCard.jsx
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import Link from "next/link";
+import ApprovalsAvatar from "./ApprovalsAvatar";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-export default function ApprovalsWaitingCard() {
+export default function ApprovalsCard({ pending_count = 0 }) {
+  const isPending = pending_count > 0;
+
   return (
     <Box
       sx={{
-        width: "20vw", // Always 20% of viewport width
-        height: "20vh", // Limits height to 20% of viewport height
-        overflow: "hidden", // Prevents content from overflowing
-        maxWidth: "300px", // Prevents it from getting too large
-        minWidth: "200px", // Ensures it doesn’t become too small
+        width: { xs: "100%", sm: "100%", md: "40%" },
+        maxWidth: "500px",
+        minWidth: { xs: "100%", md: "250px" },
         display: "flex",
-        alignSelf: "flex-start", // Aligns it to the start of the parent container
+        alignSelf: "center",
+        justifyContent: "center",
       }}
     >
-      <Card variant="outlined">
-        <CardContent>
-          <Typography variant="h10" component="div">
-            3 Timesheet(s) Awaiting Approval
-          </Typography>
+      <Card
+        variant="outlined"
+        sx={{
+          width: "100%",
+          borderRadius: "24px",
+          overflow: "hidden",
+          minHeight: "25vh",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <CardContent sx={{ flexGrow: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <ApprovalsAvatar pending_count={pending_count} size={48} />
+            <Box sx={{ ml: 2 }}>
+              <Typography variant="h6" color="text.primary">
+                {isPending ? `Approvals ` : "No Approvals Waiting"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {isPending
+                  ? "Timesheets awaiting your approval"
+                  : "No timesheets awaiting your approval"}
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
-        <CardActions>
-          <Button size="small">Go To Approvals</Button>
+        <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
+          <Button
+            color="primary"
+            size="small"
+            component={Link}
+            href="/approvals"
+            endIcon={<ArrowForwardIcon />}
+          >
+            Go to Approvals
+          </Button>
         </CardActions>
       </Card>
     </Box>

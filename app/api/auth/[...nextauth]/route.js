@@ -46,6 +46,13 @@ export const authOptions = {
           if (data) return data;
         } catch (error) {
           console.error("Error during authorization:", error);
+          // Check if the error is due to the backend being unreachable
+          if (
+            error.code === "ECONNREFUSED" ||
+            error.message.includes("Network Error")
+          ) {
+            throw new Error("Service Unavailable"); // Custom error to indicate 503
+          }
         }
         return null; // Return null in case of any error
       },
