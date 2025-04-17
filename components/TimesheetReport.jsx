@@ -9,7 +9,7 @@ import {   Button,
     
 
 const TimesheetReport = ({ handleFilterChange,
-    handleExport,filters
+    handleExport,filters,districts
    })=>{
     return(
          
@@ -20,6 +20,7 @@ const TimesheetReport = ({ handleFilterChange,
   label="Start Month"
   type="month"
   name="startDate"
+  required
   value={filters.startDate}
   onChange={handleFilterChange}
   fullWidth
@@ -34,26 +35,32 @@ const TimesheetReport = ({ handleFilterChange,
   value={filters.endDate}
   onChange={handleFilterChange}
   fullWidth
+  required
   margin="normal"
   InputLabelProps={{ shrink: true }}
 />
 
-    <FormControl fullWidth margin="normal">
-      <InputLabel>District</InputLabel>
-      <Select
-        name="district"
-        value={filters.district}
-        onChange={handleFilterChange}
-      >
-        <MenuItem value="">All</MenuItem>
-        <MenuItem value="Lilongwe">Lilongwe</MenuItem>
-        <MenuItem value="Blantyre">Blantyre</MenuItem>
-      </Select>
-    </FormControl>
+<FormControl fullWidth margin="normal">
+        <InputLabel>District</InputLabel>
+        <Select
+          name="district"
+          required
+          value={filters.district}
+          onChange={handleFilterChange}
+        >
+          <MenuItem value="">Select District</MenuItem>
+          {districts.map(district => (
+            <MenuItem key={district.id} value={district.name}>
+              {district.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
     <FormControl fullWidth margin="normal">
       <InputLabel>Export Format</InputLabel>
       <Select
         name="format"
+        required
         value={filters.format}
         onChange={handleFilterChange}
       >

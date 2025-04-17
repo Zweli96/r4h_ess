@@ -284,84 +284,55 @@ export default function TimesheetPage() {
 
   const handleSubmit = () => {
     if (!selectedMonth) {
-      alert("Please select a month first.");
+      alert('Please select a month first.');
       return;
     }
-
-    const [year, month] = selectedMonth.split("-");
+    const [year, month] = selectedMonth.split('-');
     const period = `${monthNames[parseInt(month) - 1]} ${year}`;
-
-    let missingDates = [];
+  
+    // Initialize timesheet object with empty strings for all dates
     const timesheet = {};
-
-    for (let i = 0; i < chunkedDays.length; i++) {
-      const daysChunk = chunkedDays[i];
+    chunkedDays.flat().forEach((day) => {
+      if (!day.dateStr) return;
+      const actualDate = new Date(day.dateStr);
+      actualDate.setDate(actualDate.getDate() + 1);
+      const actualDateStr = actualDate.toISOString().split('T')[0];
+      timesheet[actualDateStr] = {
+        projects: {},
+        leave: {},
+      };
+      ACTIVITIES.forEach((activity) => {
+        if (LOE_ACTIVITIES.includes(activity) && activity !== 'Public Leave') {
+          timesheet[actualDateStr].projects[activity] = '';
+        } else {
+          timesheet[actualDateStr].leave[activity] = '';
+        }
+      });
+    });
+  
+    // Populate timesheet object with actual data
+    chunkedDays.forEach((daysChunk, i) => {
       const chunkRows = chunkedData[i] || [];
-
-      for (let dayIdx = 0; dayIdx < daysChunk.length; dayIdx++) {
-        const day = daysChunk[dayIdx];
-
-        // skipping empty weekends
-        if (day.dayOfWeek === 0 || day.dayOfWeek === 6) continue;
-
-        let hasValue = false;
-
-        // checking value in row index
-        for (let rowIdx = 0; rowIdx < chunkRows.length; rowIdx++) {
-          const row = chunkRows[rowIdx];
-
-          if (row.daily[dayIdx] !== "") {
-            // with value
-            hasValue = true;
-          }
-
-          // timesheet submission
-          if (day.dateStr) {
-            if (!timesheet[day.dateStr]) {
-              timesheet[day.dateStr] = { projects: {}, leave: {} };
-            }
-
-            const hours = row.daily[dayIdx];
-
-            if (
-              LOE_ACTIVITIES.includes(row.activity) &&
-              row.activity !== "Public Leave"
-            ) {
-              timesheet[day.dateStr].projects[row.activity] = hours || "";
-            } else {
-              timesheet[day.dateStr].leave[row.activity] = hours || "";
-            }
-          }
-        }
-
-        // without value
-        if (!hasValue && day.dateStr) {
-          let correctedDate = new Date(day.dateStr);
-          if (!isNaN(correctedDate)) {
-            correctedDate.setDate(correctedDate.getDate() + 1);
-            let correctedDateStr = correctedDate.toISOString().split("T")[0];
-            missingDates.push(correctedDateStr);
+      daysChunk.forEach((day, dayIdx) => {
+        if (!day.dateStr) return;
+        const actualDate = new Date(day.dateStr);
+        actualDate.setDate(actualDate.getDate() + 1);
+        const actualDateStr = actualDate.toISOString().split('T')[0];
+        chunkRows.forEach((row) => {
+          const hours = row.daily[dayIdx];
+          if (LOE_ACTIVITIES.includes(row.activity) && row.activity !== 'Public Leave') {
+            timesheet[actualDateStr].projects[row.activity] = hours || '';
           } else {
-            console.error("Invalid date detected:", day.dateStr);
+            timesheet[actualDateStr].leave[row.activity] = hours || '';
           }
-        }
-      }
-    }
-
-    // alerting user if their are empty date in json format of those dates
-    if (missingDates.length > 0) {
-      alert(
-        `Please fill in hours for the following dates: ${missingDates.join(
-          ", "
-        )}`
-      );
-      return;
-    }
-
-    // assigning calculated totals to totals variable
+        });
+      });
+    });
+  
+    // Calculate totals
     const totals = calculateTotals();
-
-    // whole data object for timesheet submission to api
+  
+    // Whole data object for timesheet submission to API
     const data = {
       period,
       total_hours: totals.totalWorkHours + totals.totalLeaveHours,
@@ -370,32 +341,57 @@ export default function TimesheetPage() {
       filled_timesheet: timesheet,
       created_by: session.user.pk,
     };
-
-    fetch("http://127.0.0.1:8000/api/timesheets/", {
-      method: "POST",
+  
+    // Check for missing dates
+    let missingDates = [];
+    chunkedDays.forEach((daysChunk, i) => {
+      const chunkRows = chunkedData[i] || [];
+      daysChunk.forEach((day, dayIdx) => {
+        if (day.dayOfWeek === 0 || day.dayOfWeek === 6) return;
+        const actualDate = new Date(day.dateStr);
+        actualDate.setDate(actualDate.getDate() + 1);
+        const actualDateStr = actualDate.toISOString().split('T')[0];
+        let hasValue = false;
+        chunkRows.forEach((row) => {
+          if (row.daily[dayIdx] !== '') {
+            hasValue = true;
+          }
+        });
+        if (!hasValue && day.dateStr) {
+          missingDates.push(actualDateStr);
+        }
+      });
+    });
+  
+    if (missingDates.length > 0) {
+      alert(`Please fill in hours for the following dates: ${missingDates.join(', ')}`);
+      return;
+    }
+  
+    // Submit timesheet data to API
+    fetch('http://127.0.0.1:8000/api/timesheets/', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
     })
       .then((response) => response.json())
       .then((data) => {
         if (data.id) {
-          alert("Timesheet submitted successfully!");
+          alert('Timesheet submitted successfully!');
         } else {
-          alert("Submission failed. Please check your data and try again.");
+          alert('Submission failed. Please check your data and try again.');
         }
-        console.log("Response:", data);
+        console.log('Response:', data);
       })
       .catch((error) => {
-        console.error("Error:", error);
-        alert(
-          "An error occurred while submitting the timesheet. Please try again."
-        );
+        console.error('Error:', error);
+        alert('An error occurred while submitting the timesheet. Please try again.');
       });
   };
-
-
+  
+  
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }}>
       <Typography variant="h5" gutterBottom>

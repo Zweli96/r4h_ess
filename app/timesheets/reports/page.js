@@ -20,7 +20,15 @@ const TimesheetReports = () => {
 
   const [timesheets, setTimesheets] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
+  const [districts, setDistricts] = useState([]);
 
+
+  //fetching districts
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/timesheets/districts/')
+      .then(response => response.json())
+      .then(data => setDistricts(data));
+  }, []);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/timesheets/timesheetReport")
@@ -28,14 +36,38 @@ const TimesheetReports = () => {
       .then((data) => setTimesheets(data));
   }, []);
 
+
+//   useEffect(() => {
+//     const params = new URLSearchParams();
+//     if (filters.startDate) params.append('start_date', filters.startDate);
+//     if (filters.endDate) params.append('end_date', filters.endDate);
+//     if (filters.district) params.append('district', filters.district);
+
+//     fetch(`http://127.0.0.1:8000/api/timesheets/timesheetReport?${params.toString()}`)
+//         .then((response) => response.json())
+//         .then((data) => setTimesheets(data));
+// }, [filters]);
+
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
 
   const handleExport = () => {
+    if (!filters.startDate || !filters.endDate || !filters.district || !filters.format) {
+      alert("Please fill out all required fields.");
+      return;
+    }
    const filteredData = timesheets.filter((entry) => {
-      const periodDate = `${entry.period.split("/")[1]}-${entry.period.split("/")[0]}`;
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const formatPeriod = (period) => {
+      const [monthName, year] = period.split(" ");
+      const month = (monthNames.indexOf(monthName) + 1).toString().padStart(2, '0');
+      return `${year}-${month}`;
+    };
+    
+    const periodDate = formatPeriod(entry.period);
       const filterStartDate = filters.startDate || "";
       const filterEndDate = filters.endDate || "";
 
@@ -53,21 +85,64 @@ const TimesheetReports = () => {
 
     
     console.log(filteredData)
+    // if (filters.format === "excel") {
+    //   const worksheetData = filteredData.map((entry) => {
+    //     const projects = Object.keys(entry.project).map((project) => {
+    //       return entry.project[project];
+    //     });
+    //     return [
+    //       entry.employee_id,
+    //       entry.staff_name,
+    //       entry.department,
+    //       entry.district,
+    //       entry.period,
+    //       ...projects,
+    //       entry.total_work_hours,
+    //       entry.total_leave_hours,
+    //       entry.total_available_hours,
+    //       entry.LOE,
+    //     ];
+    //   });
+    //   const worksheet = XLSX.utils.aoa_to_sheet([
+    //     [
+    //       "Employee ID",
+    //       "Staff Name",
+    //       "Department",
+    //       "District",
+    //       "Period",
+    //       ...filteredData[0].project
+    //         ? Object.keys(filteredData[0].project)
+    //         : [],
+    //       "Total Work Hours",
+    //       "Total Leave Hours",
+    //       "Total Available Hours",
+    //       "LOE (%)",
+    //     ],
+    //     ...worksheetData,
+    //   ]);
+    //   const workbook = XLSX.utils.book_new();
+    //   XLSX.utils.book_append_sheet(workbook, worksheet, "Timesheet Report");
+    //   XLSX.writeFile(workbook,`${fileName}.xlsx` );
+
+    // }
+
+
     if (filters.format === "excel") {
+      const projects = filteredData[0].project ? Object.keys(filteredData[0].project) : [];
       const worksheetData = filteredData.map((entry) => {
-        const projects = Object.keys(entry.project).map((project) => {
-          return entry.project[project];
-        });
+        const projectHours = projects.map((project) => entry.project[project].hours);
+        const projectLoe = projects.map((project) => entry.project[project].loe);
         return [
           entry.employee_id,
           entry.staff_name,
           entry.department,
           entry.district,
           entry.period,
-          ...projects,
+          ...projectHours,
           entry.total_work_hours,
           entry.total_leave_hours,
           entry.total_available_hours,
+          ...projectLoe,
           entry.LOE,
         ];
       });
@@ -78,20 +153,18 @@ const TimesheetReports = () => {
           "Department",
           "District",
           "Period",
-          ...filteredData[0].project
-            ? Object.keys(filteredData[0].project)
-            : [],
+          ...projects.map((project) => `${project} Hours`),
           "Total Work Hours",
           "Total Leave Hours",
-          "Total Available Hours",
+          "Total Hours",
+          ...projects.map((project) => `${project} LOE (%)`),
           "LOE (%)",
         ],
         ...worksheetData,
       ]);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Timesheet Report");
-      XLSX.writeFile(workbook,`${fileName}.xlsx` );
-
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
   
 
@@ -140,6 +213,7 @@ const TimesheetReports = () => {
 handleFilterChange={handleFilterChange}
 handleExport={handleExport}
 filters={filters}
+districts={districts}
 />
 
 

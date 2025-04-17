@@ -37,40 +37,48 @@ const PdfTimesheetTable = ({ data }) => {
       </Typography>
       <TableContainer component={Paper}>
         <Table size="small">
-          <TableHead sx={{fontWeight:"600"}}>
-            <TableRow>
-              <TableCell sx={{fontWeight:"600"}}>Employee ID</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>Staff Name</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>Department</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>District</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>Period</TableCell>
-              {projectKeys.map((proj, index) => (
-                <TableCell sx={{fontWeight:"600"}} key={index}>{proj}</TableCell>
-              ))}
-              <TableCell sx={{fontWeight:"600"}}>Work Hours</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>Leave Hours</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>Total Hours</TableCell>
-              <TableCell sx={{fontWeight:"600"}}>LOE (%)</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((entry, index) => (
-              <TableRow key={index}>
-                <TableCell>{entry.employee_id}</TableCell>
-                <TableCell>{entry.staff_name}</TableCell>
-                <TableCell>{entry.department}</TableCell>
-                <TableCell>{entry.district}</TableCell>
-                <TableCell>{entry.period}</TableCell>
-                {projectKeys.map((proj, i) => (
-                  <TableCell key={i}>{entry.project[proj]}</TableCell>
-                ))}
-                <TableCell>{entry.total_work_hours}</TableCell>
-                <TableCell>{entry.total_leave_hours}</TableCell>
-                <TableCell>{entry.total_available_hours}</TableCell>
-                <TableCell>{entry.LOE}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
+        <TableHead sx={{fontWeight:"600"}}>
+  <TableRow>
+    <TableCell sx={{fontWeight:"600"}}>Employee ID</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>Staff Name</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>Department</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>District</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>Period</TableCell>
+    {projectKeys.map((proj, index) => (
+      <React.Fragment key={index}>
+        <TableCell sx={{fontWeight:"600"}}>{proj} Hours</TableCell>
+       
+      </React.Fragment>
+    ))}
+    <TableCell sx={{fontWeight:"600"}}>Work Hours</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>Leave Hours</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>Total Hours</TableCell>
+    <TableCell sx={{fontWeight:"600"}}>LOE (%)</TableCell>
+  </TableRow>
+</TableHead>
+
+<TableBody>
+  {data.map((entry, index) => (
+    <TableRow key={index}>
+      <TableCell>{entry.employee_id}</TableCell>
+      <TableCell>{entry.staff_name}</TableCell>
+      <TableCell>{entry.department}</TableCell>
+      <TableCell>{entry.district}</TableCell>
+      <TableCell>{entry.period}</TableCell>
+      {projectKeys.map((proj, i) => (
+  <React.Fragment key={i}>
+    <TableCell>{entry.project?.[proj]?.hours}</TableCell>
+    
+  </React.Fragment>
+))}
+
+      <TableCell>{entry.total_work_hours}</TableCell>
+      <TableCell>{entry.total_leave_hours}</TableCell>
+      <TableCell>{entry.total_available_hours}</TableCell>
+      <TableCell>{entry.LOE}</TableCell>
+    </TableRow>
+  ))}
+</TableBody>
         </Table>
       </TableContainer>
     </div>
