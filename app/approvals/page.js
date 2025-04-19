@@ -146,7 +146,7 @@ const page = () => {
         rejectTimesheetId={selectedRejectTimesheet?.id}
         title={`Reject Timesheet: ${
           selectedRejectTimesheet?.created_by_full_name || ""
-        } - ${selectedRejectTimesheet?.period_name || ""}`}
+        } - ${selectedRejectTimesheet?.period || ""}`}
         contentText="Please enter your reason for rejecting this timesheet."
       />
     </Box>

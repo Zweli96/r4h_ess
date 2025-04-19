@@ -353,10 +353,10 @@ export default function TimesheetPage() {
       leave_days: totals.totalLeaveDays,
       working_days: totals.totalWorkingDays,
       filled_timesheet: timesheet,
-      created_by: session.user.pk,
+      created_by: session.user.id,
     };
 
-    fetch("http://127.0.0.1:8000/api/timesheets/", {
+    fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

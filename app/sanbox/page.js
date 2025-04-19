@@ -7,6 +7,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import RejectTimesheetDialog from "../../components/RejectTimesheetDialog";
+import ViewTimesheetInfoDialog from "../../components/ViewTimesheetInfoDialog";
 
 export default function ParentComponent() {
   const [dialogOpen, setDialogOpen] = React.useState(false);
@@ -33,39 +34,5 @@ export default function ParentComponent() {
     setSelectedTimesheet(null);
   };
 
-  return (
-    <div>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {timesheets.map((timesheet) => (
-            <TableRow key={timesheet.id}>
-              <TableCell>{timesheet.name}</TableCell>
-              <TableCell>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleOpenDialog(timesheet)}
-                >
-                  Reject
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <RejectTimesheetDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        onSubmit={handleFormSubmit}
-        title={`Reject Timesheet: ${selectedTimesheet?.name || ""}`}
-        contentText="Please enter your reason for rejecting this timesheet."
-      />
-    </div>
-  );
+  return <ViewTimesheetInfoDialog open={true} />;
 }

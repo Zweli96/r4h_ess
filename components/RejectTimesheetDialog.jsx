@@ -12,8 +12,8 @@ export default function RejectTimesheetDialog({
   onClose,
   onSubmit,
   rejectTimesheetId,
-  title = "Subscribe",
-  contentText = "To subscribe to this website, please enter your email address here. We will send updates occasionally.",
+  title,
+  contentText,
 }) {
   return (
     <Dialog open={open} onClose={onClose}>

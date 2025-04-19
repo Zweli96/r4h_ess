@@ -37,7 +37,9 @@ export default function ApprovalsCard({ pending_count = 0 }) {
       >
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <ApprovalsAvatar pending_count={pending_count} size={48} />
+            <Link href="/approvals">
+              <ApprovalsAvatar pending_count={pending_count} size={48} />
+            </Link>
             <Box sx={{ ml: 2 }}>
               <Typography variant="h6" color="text.primary">
                 {isPending ? `Approvals ` : "No Approvals Waiting"}

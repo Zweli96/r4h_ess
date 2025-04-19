@@ -29,7 +29,7 @@ const BoldTableCell = (props) => (
 const getStatusColor = (status) => {
   switch (status) {
     case "Submitted":
-      return "grey";
+      return "default";
     case "Rejected":
       return "error";
     case "Line Manager Approved":
@@ -41,7 +41,7 @@ const getStatusColor = (status) => {
   }
 };
 
-const MyTimesheets = ({ timesheets, onApprove, onView, onReject, loading }) => {
+const MyTimesheets = ({ timesheets, onView, loading }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>My Timesheets</Title>
@@ -73,7 +73,7 @@ const MyTimesheets = ({ timesheets, onApprove, onView, onReject, loading }) => {
               <TableCell align="center">{timesheet.leave_days}</TableCell>
               <TableCell align="center">
                 <Tooltip title="View">
-                  <IconButton onClick={() => onView(timesheet.id)}>
+                  <IconButton onClick={() => onView(timesheet)}>
                     <VisibilityIcon />
                   </IconButton>
                 </Tooltip>

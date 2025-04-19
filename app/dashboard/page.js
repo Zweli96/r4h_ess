@@ -75,7 +75,9 @@ export default function Home() {
           spacing={3}
           sx={{ alignItems: "stretch" }}
         >
-          <DaysUntilTimesheetCard />
+          <DaysUntilTimesheetCard
+            is_submitted={session.user.timesheet_submitted}
+          />
           <ApprovalsCard pending_count={approvalCount} />
         </Stack>
       </Box>

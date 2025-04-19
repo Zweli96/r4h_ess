@@ -11,15 +11,27 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Link from "next/link";
 
 export default function DaysUntilTimesheetCard({ is_submitted = false }) {
-  // Get current date and calculate days to/from 17th
+  // Get current date and calculate days to/from 20th
   const today = new Date();
   const currentMonth = today.toLocaleString("default", { month: "long" }); // e.g., "April"
   const currentYear = today.getFullYear();
-  const dueDate = new Date(currentYear, today.getMonth(), 17);
+  const dueDate = new Date(currentYear, today.getMonth(), 16);
   const diffTime = dueDate - today;
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Days until 17th
-  const isPastDue = diffDays < 0; // True if 17th has passed
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Days until 20th
+  const isPastDue = diffDays < 0; // True if 20th has passed
+  const isDueToday = diffDays === 0; // True if today is the 20th
   const displayDays = Math.abs(diffDays); // Absolute value for display
+  const formatDate = (date) => {
+    const formatted = new Intl.DateTimeFormat("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })
+      .format(date)
+      .replace(/,/, ""); // Remove any commas from the output
+    return formatted;
+  };
 
   // Determine text based on conditions
   let primaryText = "";
@@ -28,12 +40,19 @@ export default function DaysUntilTimesheetCard({ is_submitted = false }) {
   if (is_submitted) {
     primaryText = "Completed";
     secondaryText = `${currentMonth} Timesheet completed`;
+  } else if (isDueToday) {
+    primaryText = `${currentMonth} Timesheet Due Today`;
+    secondaryText = `Please submit timesheet for ${currentMonth} ${currentYear}`;
   } else if (isPastDue) {
-    primaryText = `${displayDays} days`;
-    secondaryText = `${currentMonth} Timesheet was due ${displayDays} days ago`;
+    primaryText = `${displayDays} days late`;
+    secondaryText = `${currentMonth} Timesheet was due ${displayDays} days ago on ${formatDate(
+      dueDate
+    )}`;
   } else {
     primaryText = `${displayDays} days`;
-    secondaryText = `Until ${currentMonth} Timesheet is Due`;
+    secondaryText = `Until ${currentMonth} Timesheet is due on ${formatDate(
+      dueDate
+    )}`;
   }
 
   return (
@@ -60,11 +79,14 @@ export default function DaysUntilTimesheetCard({ is_submitted = false }) {
       >
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <TimesheetAvatar
-              is_submitted={is_submitted}
-              is_past_due={isPastDue}
-              size={48}
-            />
+            <Link href="/timesheets">
+              <TimesheetAvatar
+                is_submitted={is_submitted}
+                is_past_due={isPastDue}
+                is_due_today={isDueToday}
+                size={48}
+              />
+            </Link>
             <Box sx={{ ml: 2 }}>
               <Typography variant="h6" color="text.primary">
                 {primaryText}

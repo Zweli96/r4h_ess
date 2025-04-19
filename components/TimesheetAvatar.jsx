@@ -4,10 +4,12 @@ import Avatar from "@mui/material/Avatar";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import WarningIcon from "@mui/icons-material/Warning";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import TodayIcon from "@mui/icons-material/Today";
 
 export default function TimesheetAvatar({
   is_submitted,
   is_past_due,
+  is_due_today,
   size = 48,
 }) {
   // Determine icon and background color
@@ -17,6 +19,9 @@ export default function TimesheetAvatar({
   if (is_submitted) {
     IconComponent = CheckCircleIcon;
     backgroundColor = "success.main"; // Green (e.g., #2e7d32)
+  } else if (is_due_today) {
+    IconComponent = TodayIcon;
+    backgroundColor = "warning.main"; // Yellow (e.g., #f57c00)
   } else if (is_past_due) {
     IconComponent = WarningIcon;
     backgroundColor = "error.main"; // Red (e.g., #d32f2f)
