@@ -50,7 +50,7 @@ export const menu = [
       },
       {
         title: "Timesheet Report",
-        to: "/reports/timesheet",
+        to: "/timesheets/reports",
       },
     ],
   },

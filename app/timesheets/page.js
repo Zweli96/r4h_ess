@@ -33,6 +33,14 @@ import {
 //declaring actities and loa activities
 let LOE_ACTIVITIES = [];
 let ACTIVITIES = [];
+const defaultActivities = ["R4H", "CDC", "Public Leave"];
+const currentDate = new Date();
+const currentYear = currentDate.getFullYear();
+const currentMonth = currentDate.getMonth() + 1; // Months are 0-based
+const defaultSelectedMonth = `${currentYear}-${String(currentMonth).padStart(
+  2,
+  "0"
+)}`;
 
 //data input for all activities
 function initChunkData(numDays) {
@@ -47,10 +55,11 @@ export default function TimesheetPage() {
   //declaring session and other variables
   const { data: session, status } = useSession({ required: true });
 
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(defaultSelectedMonth);
   const [chunkedDays, setChunkedDays] = useState([]);
   const [chunkedData, setChunkedData] = useState([]);
-  const [selectedActivities, setSelectedActivities] = useState([]);
+  const [selectedActivities, setSelectedActivities] =
+    useState(defaultActivities);
   const [activities, setActivities] = useState([]);
   const monthNames = [
     "January",
@@ -71,6 +80,16 @@ export default function TimesheetPage() {
     fetchActivities();
   }, []);
 
+  useEffect(() => {
+    if (activities.length > 0) {
+      handleMonthChange({ target: { value: defaultSelectedMonth } });
+      setSelectedActivities(defaultActivities);
+    }
+  }, [activities]);
+
+  useEffect(() => {
+    setSelectedActivities(defaultActivities);
+  }, [activities]);
   //getting activities from database
   const fetchActivities = async () => {
     try {
@@ -272,81 +291,55 @@ export default function TimesheetPage() {
       alert("Please select a month first.");
       return;
     }
-
     const [year, month] = selectedMonth.split("-");
     const period = `${monthNames[parseInt(month) - 1]} ${year}`;
 
-    let missingDates = [];
+    // Initialize timesheet object with empty strings for all dates
     const timesheet = {};
+    chunkedDays.flat().forEach((day) => {
+      if (!day.dateStr) return;
+      const actualDate = new Date(day.dateStr);
+      actualDate.setDate(actualDate.getDate() + 1);
+      const actualDateStr = actualDate.toISOString().split("T")[0];
+      timesheet[actualDateStr] = {
+        projects: {},
+        leave: {},
+      };
+      ACTIVITIES.forEach((activity) => {
+        if (LOE_ACTIVITIES.includes(activity) && activity !== "Public Leave") {
+          timesheet[actualDateStr].projects[activity] = "";
+        } else {
+          timesheet[actualDateStr].leave[activity] = "";
+        }
+      });
+    });
 
-    for (let i = 0; i < chunkedDays.length; i++) {
-      const daysChunk = chunkedDays[i];
+    // Populate timesheet object with actual data
+    chunkedDays.forEach((daysChunk, i) => {
       const chunkRows = chunkedData[i] || [];
-
-      for (let dayIdx = 0; dayIdx < daysChunk.length; dayIdx++) {
-        const day = daysChunk[dayIdx];
-
-        // skipping empty weekends
-        if (day.dayOfWeek === 0 || day.dayOfWeek === 6) continue;
-
-        let hasValue = false;
-
-        // checking value in row index
-        for (let rowIdx = 0; rowIdx < chunkRows.length; rowIdx++) {
-          const row = chunkRows[rowIdx];
-
-          if (row.daily[dayIdx] !== "") {
-            // with value
-            hasValue = true;
-          }
-
-          // timesheet submission
-          if (day.dateStr) {
-            if (!timesheet[day.dateStr]) {
-              timesheet[day.dateStr] = { projects: {}, leave: {} };
-            }
-
-            const hours = row.daily[dayIdx];
-
-            if (
-              LOE_ACTIVITIES.includes(row.activity) &&
-              row.activity !== "Public Leave"
-            ) {
-              timesheet[day.dateStr].projects[row.activity] = hours || "";
-            } else {
-              timesheet[day.dateStr].leave[row.activity] = hours || "";
-            }
-          }
-        }
-
-        // without value
-        if (!hasValue && day.dateStr) {
-          let correctedDate = new Date(day.dateStr);
-          if (!isNaN(correctedDate)) {
-            correctedDate.setDate(correctedDate.getDate() + 1);
-            let correctedDateStr = correctedDate.toISOString().split("T")[0];
-            missingDates.push(correctedDateStr);
+      daysChunk.forEach((day, dayIdx) => {
+        if (!day.dateStr) return;
+        const actualDate = new Date(day.dateStr);
+        actualDate.setDate(actualDate.getDate() + 1);
+        const actualDateStr = actualDate.toISOString().split("T")[0];
+        chunkRows.forEach((row) => {
+          const hours = row.daily[dayIdx];
+          if (
+            LOE_ACTIVITIES.includes(row.activity) &&
+            row.activity !== "Public Leave"
+          ) {
+            timesheet[actualDateStr].projects[row.activity] = hours || "";
           } else {
-            console.error("Invalid date detected:", day.dateStr);
+            timesheet[actualDateStr].leave[row.activity] = hours || "";
           }
-        }
-      }
-    }
+        });
+      });
+    });
 
-    // alerting user if their are empty date in json format of those dates
-    if (missingDates.length > 0) {
-      alert(
-        `Please fill in hours for the following dates: ${missingDates.join(
-          ", "
-        )}`
-      );
-      return;
-    }
-
-    // assigning calculated totals to totals variable
+    // Calculate totals
     const totals = calculateTotals();
 
-    // whole data object for timesheet submission to api
+    // Whole data object for timesheet submission to API
     const data = {
       period,
       total_hours: totals.totalWorkHours + totals.totalLeaveHours,
@@ -356,6 +349,37 @@ export default function TimesheetPage() {
       created_by: session.user.id,
     };
 
+    // Check for missing dates
+    let missingDates = [];
+    chunkedDays.forEach((daysChunk, i) => {
+      const chunkRows = chunkedData[i] || [];
+      daysChunk.forEach((day, dayIdx) => {
+        if (day.dayOfWeek === 0 || day.dayOfWeek === 6) return;
+        const actualDate = new Date(day.dateStr);
+        actualDate.setDate(actualDate.getDate() + 1);
+        const actualDateStr = actualDate.toISOString().split("T")[0];
+        let hasValue = false;
+        chunkRows.forEach((row) => {
+          if (row.daily[dayIdx] !== "") {
+            hasValue = true;
+          }
+        });
+        if (!hasValue && day.dateStr) {
+          missingDates.push(actualDateStr);
+        }
+      });
+    });
+
+    if (missingDates.length > 0) {
+      alert(
+        `Please fill in hours for the following dates: ${missingDates.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    // Submit timesheet data to API
     fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
       method: "POST",
       headers: {
