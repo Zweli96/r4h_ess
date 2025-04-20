@@ -62,11 +62,11 @@ export default function Home() {
         >
           <ProfileInformationCard
             name={fullName}
-            // position={session.user.staff.position}
-            // employee_id={session.user.staff.employee_number}
-            // district={session.user.staff.district}
-            // department={session.user.staff.department}
-            // line_manager={session.user.staff.line_manager}
+            position={session.user.staff.position}
+            employee_id={session.user.staff.employee_number}
+            district={session.user.staff.district}
+            department={session.user.staff.department}
+            line_manager={session.user.staff.line_manager}
           />
         </Stack>
         <br />

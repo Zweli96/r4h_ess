@@ -13,6 +13,7 @@ import { signIn } from "next-auth/react";
 import ESSIcon from "@../../../public/ESS.svg";
 import Box from "@mui/material/Box";
 import Alert from "@mui/material/Alert";
+import { useSearchParams } from "next/navigation"; // For Next.js 13+ App Router
 
 const getBackgroundColor = (theme) =>
   theme.palette.mode === "light"
@@ -26,12 +27,18 @@ export default function SignInSide() {
   const [fieldErrors, setFieldErrors] = useState({
     username: false,
     password: false,
-  }); // Track individual field errors
+  });
+
+  // Get callbackUrl from URL query parameters
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/"; // Fallback to "/" if no callbackUrl
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(false);
     setErrorMessage("");
     setFieldErrors({ username: false, password: false });
+
     // Check if fields are empty
     if (!userInfo.username || !userInfo.password) {
       setError(true);
@@ -42,10 +49,12 @@ export default function SignInSide() {
       });
       return;
     }
+
     const res = await signIn("credentials", {
       username: userInfo.username,
       password: userInfo.password,
-      redirect: false,
+      redirect: false, // Keep redirect false to handle manually
+      callbackUrl, // Pass the callbackUrl to NextAuth
     });
 
     if (res?.error === "Service Unavailable") {
@@ -58,7 +67,7 @@ export default function SignInSide() {
       setErrorMessage("Incorrect username or password");
     } else if (!res?.error) {
       // Redirect to callbackUrl on success
-      window.location.href = "/";
+      window.location.href = callbackUrl; // Use callbackUrl instead of "/"
     }
 
     console.log(res);
@@ -76,10 +85,7 @@ export default function SignInSide() {
           backgroundImage:
             "url(https://i.ibb.co/x5JDJVQ/Outdoor-Signage-Mockup-R4-H.jpg)",
           backgroundRepeat: "no-repeat",
-          backgroundColor: (t) =>
-            t.palette.mode === "light"
-              ? t.palette.grey[50]
-              : t.palette.grey[900],
+          backgroundColor: (t) => getBackgroundColor(t),
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -114,7 +120,6 @@ export default function SignInSide() {
             onSubmit={handleSubmit}
             sx={{ mt: 1 }}
           >
-            {/* Display error message if error exists */}
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
                 {errorMessage}
@@ -134,7 +139,7 @@ export default function SignInSide() {
               onChange={({ target }) =>
                 setUserInfo({ ...userInfo, username: target.value })
               }
-              error={error} // Highlight field in red if error
+              error={fieldErrors.username}
               helperText={fieldErrors.username ? "Username is required" : ""}
             />
             <TextField
@@ -150,8 +155,8 @@ export default function SignInSide() {
               onChange={({ target }) =>
                 setUserInfo({ ...userInfo, password: target.value })
               }
-              error={error} // Highlight field in red if error
-              helperText={fieldErrors.password ? "Password is required" : ""} // Error message
+              error={fieldErrors.password}
+              helperText={fieldErrors.password ? "Password is required" : ""}
             />
             <Link>
               <Button
@@ -159,7 +164,6 @@ export default function SignInSide() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                // disabled={!userInfo.username || !userInfo.password}
               >
                 Sign In
               </Button>

@@ -4,8 +4,10 @@ import Box from "@mui/material/Box";
 import React, { useState, useEffect } from "react";
 import { fetchMyTimesheets } from "../../api/api";
 import ViewTimesheetInfoDialog from "../../../components/ViewTimesheetInfoDialog";
+import { signOut, useSession } from "next-auth/react";
 
 const page = () => {
+  const { data: session, status } = useSession({ required: true });
   const [myTimesheets, setMyTimesheets] = useState([]);
   const [selectedViewTimesheet, setSelectedViewTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -42,7 +44,7 @@ const page = () => {
     <Box sx={{ display: "block" }}>
       <MyTimesheets
         timesheets={myTimesheets}
-        onView={handleTimesheetInfoDialog}
+        onInfo={handleTimesheetInfoDialog}
         loading={loading}
       />
       <ViewTimesheetInfoDialog

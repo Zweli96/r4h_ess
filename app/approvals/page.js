@@ -7,8 +7,10 @@ import React, { useState, useEffect } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { fetchApprovals, submitApproval, submitRejection } from "../api/api";
+import { signOut, useSession } from "next-auth/react";
 
 const page = () => {
+  const { data: session, status } = useSession({ required: true });
   const [approvals, setApprovals] = useState([]);
   const [selectedRejectTimesheet, setSelectedRejectTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);

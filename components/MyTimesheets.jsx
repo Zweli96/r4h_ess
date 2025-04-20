@@ -41,7 +41,7 @@ const getStatusColor = (status) => {
   }
 };
 
-const MyTimesheets = ({ timesheets, onView, loading }) => {
+const MyTimesheets = ({ timesheets, onView, onInfo, loading }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>My Timesheets</Title>
@@ -73,13 +73,13 @@ const MyTimesheets = ({ timesheets, onView, loading }) => {
               <TableCell align="center">{timesheet.leave_days}</TableCell>
               <TableCell align="center">
                 <Tooltip title="View">
-                  <IconButton onClick={() => onView(timesheet)}>
+                  <IconButton>
                     <VisibilityIcon />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Information">
                   <IconButton
-                    onClick={() => onApprove(timesheet.id)}
+                    onClick={() => onInfo(timesheet)}
                     disabled={loading[timesheet.id]} // Disable button while loading
                   >
                     {loading[timesheet.id] ? (
