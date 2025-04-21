@@ -11,8 +11,8 @@ import {
 import TimeSheetWeek from "../../components/TimeSheetWeek";
 import TimesheetSummary from "../../components/TimesheetSammary";
 import TimesheetSelectors from "../../components/TimesheetSelectors";
+import { fetchActivities } from "../api/api";
 
-import { axiosInstance } from "@../../../app/api/axiosInstance";
 import {
   Container,
   Typography,
@@ -77,7 +77,7 @@ export default function TimesheetPage() {
   ];
 
   useEffect(() => {
-    fetchActivities();
+    getActivities();
   }, []);
 
   useEffect(() => {
@@ -90,13 +90,10 @@ export default function TimesheetPage() {
   useEffect(() => {
     setSelectedActivities(defaultActivities);
   }, [activities]);
-  //getting activities from database
-  const fetchActivities = async () => {
+  // getting activities from database
+  const getActivities = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:8000/api/timesheets/activities/"
-      );
-      const data = await response.json();
+      const data = await fetchActivities();
       setActivities(data);
     } catch (error) {
       console.error(error);

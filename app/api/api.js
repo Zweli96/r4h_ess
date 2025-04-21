@@ -4,12 +4,8 @@ import axiosInstance from "../api/axiosInstance";
 export const fetchActivities = async () => {
   try {
     const response = await axiosInstance.get("/timesheets/activities");
-    debugger;
-    const data = response.json();
-
-    console.log(data);
-    return data;
-    // setActivities(data);
+    console.log(response);
+    return response.data;
   } catch (error) {
     console.error(error);
   }
