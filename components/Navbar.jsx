@@ -80,7 +80,7 @@ export default function Navbar({ toggleDrawer, open, drawerWidth }) {
             <NotificationsIcon />
           </Badge>
         </IconButton> */}
-        <Typography>
+        <Typography sx={{ display: { xs: "none", sm: "block" } }}>
           Logged in as {session?.user?.username || "unknown"}
         </Typography>
         <Tooltip title="Logout">
