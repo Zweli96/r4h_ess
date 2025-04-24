@@ -12,6 +12,9 @@ import TimeSheetWeek from "../../components/TimeSheetWeek";
 import TimesheetSummary from "../../components/TimesheetSammary";
 import TimesheetSelectors from "../../components/TimesheetSelectors";
 import { fetchActivities } from "../api/api";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import { useRouter } from "next/navigation";
 
 import {
   Container,
@@ -55,6 +58,7 @@ export default function TimesheetPage() {
   //declaring session and other variables
   const { data: session, status } = useSession({ required: true });
 
+  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(defaultSelectedMonth);
   const [chunkedDays, setChunkedDays] = useState([]);
   const [chunkedData, setChunkedData] = useState([]);
@@ -75,6 +79,13 @@ export default function TimesheetPage() {
     "November",
     "December",
   ];
+
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     getActivities();
@@ -387,17 +398,35 @@ export default function TimesheetPage() {
       .then((response) => response.json())
       .then((data) => {
         if (data.id) {
-          alert("Timesheet submitted successfully!");
+          // alert("Timesheet submitted successfully!");
+          setSnackbar({
+            open: true,
+            message: "Timesheet submitted successfully!",
+            type: "success",
+          });
+          setTimeout(() => {
+            router.push("/timesheets/history");
+          }, 5000);
         } else {
-          alert("Submission failed. Please check your data and try again.");
+          // alert("Submission failed. Please check your data and try again.");
+          setSnackbar({
+            open: true,
+            message: "Submission failed. Please check your data.",
+            type: "error",
+          });
         }
         console.log("Response:", data);
       })
       .catch((error) => {
         console.error("Error:", error);
-        alert(
-          "An error occurred while submitting the timesheet. Please try again."
-        );
+        // alert(
+        //   "An error occurred while submitting the timesheet. Please try again."
+        // );
+        setSnackbar({
+          open: true,
+          message: "An error occurred while submitting the timesheet.",
+          type: "error",
+        });
       });
   };
 
@@ -439,6 +468,20 @@ export default function TimesheetPage() {
           handleSubmit={handleSubmit}
         />
       )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.type}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
