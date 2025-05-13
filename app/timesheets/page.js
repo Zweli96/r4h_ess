@@ -295,7 +295,6 @@ export default function TimesheetPage() {
   const totals = calculateTotals();
 
   const handleSubmit = () => {
-    setLoading(true);
     if (!selectedMonth) {
       alert("Please select a month first.");
       return;
