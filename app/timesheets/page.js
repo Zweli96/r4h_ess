@@ -12,6 +12,7 @@ import TimeSheetWeek from "../../components/TimeSheetWeek";
 import TimesheetSummary from "../../components/TimesheetSammary";
 import TimesheetSelectors from "../../components/TimesheetSelectors";
 import { fetchActivities } from "../api/api";
+import axiosInstance from "../api/axiosInstance";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useRouter } from "next/navigation";
@@ -294,7 +295,7 @@ export default function TimesheetPage() {
 
   const totals = calculateTotals();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedMonth) {
       alert("Please select a month first.");
       return;
@@ -387,47 +388,86 @@ export default function TimesheetPage() {
       return;
     }
 
-    // Submit timesheet data to API
-    fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.id) {
-          // alert("Timesheet submitted successfully!");
-          setSnackbar({
-            open: true,
-            message: "Timesheet submitted successfully!",
-            type: "success",
-          });
-          setTimeout(() => {
-            router.push("/timesheets/history");
-          }, 5000);
-        } else {
-          // alert("Submission failed. Please check your data and try again.");
-          setSnackbar({
-            open: true,
-            message: "Submission failed. Please check your data.",
-            type: "error",
-          });
+    // // Submit timesheet data to API
+    // fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(data),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.id) {
+    //       // alert("Timesheet submitted successfully!");
+    //       setSnackbar({
+    //         open: true,
+    //         message: "Timesheet submitted successfully!",
+    //         type: "success",
+    //       });
+    //       setTimeout(() => {
+    //         router.push("/timesheets/history");
+    //       }, 5000);
+    //     } else {
+    //       // alert("Submission failed. Please check your data and try again.");
+    //       setSnackbar({
+    //         open: true,
+    //         message: "Submission failed. Please check your data.",
+    //         type: "error",
+    //       });
+    //     }
+    //     console.log("Response:", data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     // alert(
+    //     //   "An error occurred while submitting the timesheet. Please try again."
+    //     // );
+    //     setSnackbar({
+    //       open: true,
+    //       message: "An error occurred while submitting the timesheet.",
+    //       type: "error",
+    //     });
+    //   });
+    // Assuming this code is inside an async function (e.g., a form submission handler)
+    try {
+      const response = await axiosInstance.post(
+        "/timesheets/timesheets",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        console.log("Response:", data);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        // alert(
-        //   "An error occurred while submitting the timesheet. Please try again."
-        // );
+      );
+
+      const result = response.data;
+      console.log("Response:", result);
+
+      if (result.id) {
         setSnackbar({
           open: true,
-          message: "An error occurred while submitting the timesheet.",
+          message: "Timesheet submitted successfully!",
+          type: "success",
+        });
+        setTimeout(() => {
+          router.push("/timesheets/history");
+        }, 5000);
+      } else {
+        setSnackbar({
+          open: true,
+          message: "Submission failed. Please check your data.",
           type: "error",
         });
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setSnackbar({
+        open: true,
+        message: "An error occurred while submitting the timesheet.",
+        type: "error",
       });
+    }
   };
 
   return (
