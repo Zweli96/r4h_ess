@@ -1,38 +1,28 @@
 "use client";
 import * as React from "react";
 import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import RejectTimesheetDialog from "../../components/RejectTimesheetDialog";
 import ViewTimesheetInfoDialog from "../../components/ViewTimesheetInfoDialog";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 export default function ParentComponent() {
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [selectedTimesheet, setSelectedTimesheet] = React.useState(null);
+  // return <ViewTimesheetInfoDialog open={true} />;
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const timesheets = [
-    { id: 1, name: "John Doe - Week 1" },
-    { id: 2, name: "Jane Smith - Week 1" },
-    { id: 3, name: "Bob Johnson - Week 2" },
-  ];
-
-  const handleOpenDialog = (timesheet) => {
-    setSelectedTimesheet(timesheet);
-    setDialogOpen(true);
+  const handleClick = () => {
+    setIsLoading(true);
+    // Simulate an async operation (e.g., API call)
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
   };
 
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
-
-  const handleFormSubmit = (formData) => {
-    console.log(`Rejecting Timesheet ID: ${selectedTimesheet.id}`, formData);
-    setDialogOpen(false); // Close dialog after submission
-    setSelectedTimesheet(null);
-  };
-
-  return <ViewTimesheetInfoDialog open={true} />;
+  return (
+    <div style={{ minHeight: "100vh", padding: "20px" }}>
+      <h1>My Next.js App</h1>
+      <Button variant="contained" onClick={handleClick}>
+        Trigger Loading
+      </Button>
+      <LoadingOverlay open={isLoading} />
+    </div>
+  );
 }

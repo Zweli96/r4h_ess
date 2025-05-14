@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { redirect } from "next/navigation";
 import CircularProgress from "@mui/material/CircularProgress";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 const Protected = () => {
   const { data: session, status } = useSession();
@@ -22,7 +23,7 @@ const Protected = () => {
     );
   }
 
-  return <CircularProgress />;
+  return <LoadingOverlay open={true} />;
 };
 
 export default Protected;
