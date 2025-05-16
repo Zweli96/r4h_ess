@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import TimesheetAvatar from "./TimesheetAvatar";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import Link from "next/link";
+import CustomLink from "./CustomLink";
 
 export default function DaysUntilTimesheetCard({ is_submitted = false }) {
   // Get current date and calculate days to/from 20th
@@ -79,14 +80,14 @@ export default function DaysUntilTimesheetCard({ is_submitted = false }) {
       >
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Link href="/timesheets">
+            <CustomLink href="/timesheets">
               <TimesheetAvatar
                 is_submitted={is_submitted}
                 is_past_due={isPastDue}
                 is_due_today={isDueToday}
                 size={48}
               />
-            </Link>
+            </CustomLink>
             <Box sx={{ ml: 2 }}>
               <Typography variant="h6" color="text.primary">
                 {primaryText}

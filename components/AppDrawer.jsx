@@ -14,8 +14,10 @@ import Collapse from "@mui/material/Collapse";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
+import CustomLink from "./CustomLink";
 import { useState } from "react";
 import MuiDrawer from "@mui/material/Drawer";
+import { useSession } from "next-auth/react"; // Import useSession
 
 const drawerWidth = 240;
 const Drawer = styled(MuiDrawer, {
@@ -54,12 +56,12 @@ const MenuItem = ({ item, drawerOpen }) => {
 
 const SingleLevel = ({ item }) => {
   return (
-    <Link href={item.to}>
-      <ListItem button>
+    <CustomLink href={item.to}>
+      <ListItem>
         <ListItemIcon>{item.icon}</ListItemIcon>
         <ListItemText primary={item.title} />
       </ListItem>
-    </Link>
+    </CustomLink>
   );
 };
 
@@ -90,6 +92,16 @@ const MultiLevel = ({ item, drawerOpen }) => {
 };
 
 export default function AppDrawer({ open, toggleDrawer }) {
+  const { data: session, status } = useSession();
+
+  // Filter menu based on hr_approvals
+  const filteredMenu = menu.filter((item) => {
+    if (item.title === "Reports") {
+      return session?.user?.staff?.hr_approval === true;
+    }
+    return true;
+  });
+
   return (
     <Drawer variant="permanent" open={open}>
       <Toolbar
@@ -106,7 +118,7 @@ export default function AppDrawer({ open, toggleDrawer }) {
       </Toolbar>
 
       <List component="nav">
-        {menu.map((item, key) => (
+        {filteredMenu.map((item, key) => (
           <MenuItem key={key} item={item} drawerOpen={open} />
         ))}
         {/* <Divider sx={{ my: 1 }} />

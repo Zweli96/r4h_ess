@@ -1,38 +1,38 @@
 "use client";
-import * as React from "react";
-import Button from "@mui/material/Button";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import RejectTimesheetDialog from "../../components/RejectTimesheetDialog";
-import ViewTimesheetInfoDialog from "../../components/ViewTimesheetInfoDialog";
 
-export default function ParentComponent() {
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [selectedTimesheet, setSelectedTimesheet] = React.useState(null);
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext"; // Adjust path
+import { Button } from "@mui/material";
 
-  const timesheets = [
-    { id: 1, name: "John Doe - Week 1" },
-    { id: 2, name: "Jane Smith - Week 1" },
-    { id: 3, name: "Bob Johnson - Week 2" },
-  ];
+export default function Timesheets() {
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
+  console.log("Timesheets: LoadingContext value:", context);
 
-  const handleOpenDialog = (timesheet) => {
-    setSelectedTimesheet(timesheet);
-    setDialogOpen(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!setIsLoading) return; // Guard against undefined context
+    setIsLoading(true);
+    try {
+      // Simulate async operation (e.g., API call)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Handle success
+    } catch (error) {
+      // Handle error
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-  };
+  if (status === "loading") {
+    return <div>Loading session...</div>; // Prevent rendering until session is ready
+  }
 
-  const handleFormSubmit = (formData) => {
-    console.log(`Rejecting Timesheet ID: ${selectedTimesheet.id}`, formData);
-    setDialogOpen(false); // Close dialog after submission
-    setSelectedTimesheet(null);
-  };
-
-  return <ViewTimesheetInfoDialog open={true} />;
+  return (
+    <form onSubmit={handleSubmit}>
+      <Button type="submit" variant="contained">
+        Submit Timesheet
+      </Button>
+    </form>
+  );
 }

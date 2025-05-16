@@ -24,16 +24,16 @@ export const menu = [
   },
   // {
   //   icon: <MeetingRoomIcon />,
-  //   // title: "Leave",
-  //   // items: [
-  //   //   {
-  //   //     title: "Apply",
-  //   //     to: "/leave",
-  //   //   },
-  //     // {
-  //     //   title: "My Leave",
-  //     //   to: "/leave/history",
-  //     // },
+  //   title: "Leave",
+  //   items: [
+  //     {
+  //       title: "Apply",
+  //       to: "/leave",
+  //     },
+  //     {
+  //       title: "My Leave",
+  //       to: "/leave/history",
+  //     },
   //     {
   //       title: "Approvals",
   //       to: "/leave/apporvals",
@@ -52,6 +52,10 @@ export const menu = [
         title: "Timesheet Report",
         to: "/timesheets/reports",
       },
+      // {
+      //   title: "View Timesheet",
+      //   to: "/timesheets/reports/viewTimesheet",
+      // },
     ],
   },
 ];

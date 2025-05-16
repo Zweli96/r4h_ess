@@ -1,11 +1,14 @@
-
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import TimesheetReport from "../../../components/TimesheetReport";
 import PdfTimesheetTable from "../../../components/PdfTimesheetTable";
+import axiosInstance from "../../api/axiosInstance";
+import { LoadingContext } from "../../../components/LoadingContext";
+import { fetchMyTimesheets } from "../../api/api";
 import * as XLSX from "xlsx";
 import html2pdf from "html2pdf.js";
-import { useSession } from "next-auth/react";
+import {  useSession } from "next-auth/react";
+import { set } from "date-fns";
 import { Typography, Table, TableBody, TableCell, TextField, TableHead, TableRow, Button, Dialog, DialogTitle, DialogContent, IconButton, MenuItem } from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
@@ -13,7 +16,12 @@ import ViewTimesheet from "../../../components/ViewTimesheet";
 
 import TablePagination from '@mui/material/TablePagination';
 const TimesheetReports = () => {
+  //declaring session and other variables
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
+  console.log("Timesheets: LoadingContext value:", context);
+
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -33,15 +41,43 @@ const TimesheetReports = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/timesheets/districts/')
-      .then(response => response.json())
-      .then(data => setDistricts(data));
+    const fetchDistricts = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axiosInstance.get("/timesheets/districts/");
+        setDistricts(response.data);
+        setIsLoading(false);
+        console.log("Districts:", response.data);
+      } catch (error) {
+        setIsLoading(false);
+        console.error("Error fetching districts:", error);
+        // Optionally set an error state or show a notification
+        // setError("Failed to fetch districts");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchDistricts();
   }, []);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/timesheets/timesheetReport")
-      .then((response) => response.json())
-      .then((data) => setTimesheets(data));
+    const fetchTimesheetReport = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axiosInstance.get("/timesheets/timesheetReport");
+        setTimesheets(response.data);
+        setIsLoading(false);
+        console.log("Timesheet Report:", response.data);
+      } catch (error) {
+        setIsLoading(false);
+        console.error("Error fetching timesheet report:", error);
+        // Optionally set an error state or show a notification
+        // setError("Failed to fetch timesheet report");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTimesheetReport();
   }, []);
 
   const handleFilterChange = (e) => {
@@ -107,7 +143,12 @@ const TimesheetReports = () => {
   };
 
   const handleExport = () => {
-    if (!filters.startDate || !filters.endDate || !filters.district || !filters.format) {
+    if (
+      !filters.startDate ||
+      !filters.endDate ||
+      !filters.district ||
+      !filters.format
+    ) {
       alert("Please fill out all required fields.");
       return;
     }
@@ -319,9 +360,8 @@ const TimesheetReports = () => {
   onRowsPerPageChange={handleChangeRowsPerPage}
 />
 
-<PdfTimesheetTable data={filteredData} />
-    
-
+      <PdfTimesheetTable data={filteredData} />
+        
 
 <div id="content" className="hidden" >
   <ViewTimesheet viewedTimesheet={viewedTimesheet} viewedpageTimesheet={viewedpageTimesheet} />

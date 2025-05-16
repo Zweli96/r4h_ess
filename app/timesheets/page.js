@@ -1,34 +1,20 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect } from "react";
-import {
-  getFullDateRange,
-  chunkDaysByWeek,
-  calcChunkGrandTotal,
-  calcColumnTotal,
-  calcChunkLOE,
-} from "@../../../utils/utils";
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext";
+import { getFullDateRange, chunkDaysByWeek } from "@../../../utils/utils";
 import TimeSheetWeek from "../../components/TimeSheetWeek";
 import TimesheetSummary from "../../components/TimesheetSammary";
 import TimesheetSelectors from "../../components/TimesheetSelectors";
-// import { fetchActivities } from "../api/api";
+import { fetchActivities } from "../api/api";
+import axiosInstance from "../api/axiosInstance";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import { useRouter } from "next/navigation";
 
-import {
-  Container,
-  Typography,
-  Box,
-  TextField,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Button,
-  Select,
-  MenuItem,
-  TableContainer,
-  Paper,
-} from "@mui/material";
+import { Container, Typography } from "@mui/material";
+import { set } from "date-fns";
 
 //declaring actities and loa activities
 let LOE_ACTIVITIES = [];
@@ -54,7 +40,10 @@ function initChunkData(numDays) {
 export default function TimesheetPage() {
   //declaring session and other variables
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
 
+  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(defaultSelectedMonth);
   const [chunkedDays, setChunkedDays] = useState([]);
   const [chunkedData, setChunkedData] = useState([]);
@@ -75,6 +64,13 @@ export default function TimesheetPage() {
     "November",
     "December",
   ];
+
+  const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    type: "success",
+  });
 
   useEffect(() => {
     fetchActivities();
@@ -288,7 +284,7 @@ export default function TimesheetPage() {
 
   const totals = calculateTotals();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedMonth) {
       alert("Please select a month first.");
       return;
@@ -381,29 +377,93 @@ export default function TimesheetPage() {
       return;
     }
 
-    // Submit timesheet data to API
-    fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.id) {
-          alert("Timesheet submitted successfully!");
-        } else {
-          alert("Submission failed. Please check your data and try again.");
+    // // Submit timesheet data to API
+    // fetch("http://127.0.0.1:8000/api/timesheets/timesheets", {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(data),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.id) {
+    //       // alert("Timesheet submitted successfully!");
+    //       setSnackbar({
+    //         open: true,
+    //         message: "Timesheet submitted successfully!",
+    //         type: "success",
+    //       });
+    //       setTimeout(() => {
+    //         router.push("/timesheets/history");
+    //       }, 5000);
+    //     } else {
+    //       // alert("Submission failed. Please check your data and try again.");
+    //       setSnackbar({
+    //         open: true,
+    //         message: "Submission failed. Please check your data.",
+    //         type: "error",
+    //       });
+    //     }
+    //     console.log("Response:", data);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //     // alert(
+    //     //   "An error occurred while submitting the timesheet. Please try again."
+    //     // );
+    //     setSnackbar({
+    //       open: true,
+    //       message: "An error occurred while submitting the timesheet.",
+    //       type: "error",
+    //     });
+    //   });
+    // Assuming this code is inside an async function (e.g., a form submission handler)
+    try {
+      setIsLoading(true);
+      const response = await axiosInstance.post(
+        "/timesheets/timesheets",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-        console.log("Response:", data);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-        alert(
-          "An error occurred while submitting the timesheet. Please try again."
-        );
+      );
+
+      const result = response.data;
+      console.log("Response:", result);
+
+      if (result.id) {
+        setIsLoading(false);
+        setSnackbar({
+          open: true,
+          message:
+            "Timesheet submitted successfully! Redirecting to My Timesheets...",
+          type: "success",
+        });
+        setTimeout(() => {
+          router.push("/timesheets/history");
+        }, 5000);
+      } else {
+        setIsLoading(false);
+        setSnackbar({
+          open: true,
+          message: "Submission failed. Please check your data.",
+          type: "error",
+        });
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.error("Error:", error);
+      setSnackbar({
+        open: true,
+        message: "An error occurred while submitting the timesheet.",
+        type: "error",
       });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -444,6 +504,20 @@ export default function TimesheetPage() {
           handleSubmit={handleSubmit}
         />
       )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={10000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.type}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

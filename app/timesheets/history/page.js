@@ -2,6 +2,8 @@
 import MyTimesheets from "../../../components/MyTimesheets";
 import Box from "@mui/material/Box";
 import React, { useState, useEffect } from "react";
+import { useContext } from "react";
+import { LoadingContext } from "../../../components/LoadingContext";
 import { fetchMyTimesheets } from "../../api/api";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -14,6 +16,9 @@ import ViewTimesheet from "../../../components/ViewTimesheet";
 
 const page = () => {
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
+  console.log("Timesheets: LoadingContext value:", context);
   const [myTimesheets, setMyTimesheets] = useState([]);
   const [selectedViewTimesheet, setSelectedViewTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -35,10 +40,12 @@ const page = () => {
 
   useEffect(() => {
     const loadMyTimesheets = async () => {
+      setIsLoading(true);
       try {
         const data = await fetchMyTimesheets();
         setMyTimesheets(data);
       } catch (error) {
+        setIsLoading(false);
         setError("Error fetching timesheets");
       } finally {
         setLoading(false);
