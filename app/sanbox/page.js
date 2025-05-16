@@ -1,28 +1,38 @@
 "use client";
-import * as React from "react";
-import Button from "@mui/material/Button";
-import ViewTimesheetInfoDialog from "../../components/ViewTimesheetInfoDialog";
-import LoadingOverlay from "../../components/LoadingOverlay";
 
-export default function ParentComponent() {
-  // return <ViewTimesheetInfoDialog open={true} />;
-  const [isLoading, setIsLoading] = React.useState(false);
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext"; // Adjust path
+import { Button } from "@mui/material";
 
-  const handleClick = () => {
+export default function Timesheets() {
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
+  console.log("Timesheets: LoadingContext value:", context);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!setIsLoading) return; // Guard against undefined context
     setIsLoading(true);
-    // Simulate an async operation (e.g., API call)
-    setTimeout(() => {
+    try {
+      // Simulate async operation (e.g., API call)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Handle success
+    } catch (error) {
+      // Handle error
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
+  if (status === "loading") {
+    return <div>Loading session...</div>; // Prevent rendering until session is ready
+  }
+
   return (
-    <div style={{ minHeight: "100vh", padding: "20px" }}>
-      <h1>My Next.js App</h1>
-      <Button variant="contained" onClick={handleClick}>
-        Trigger Loading
+    <form onSubmit={handleSubmit}>
+      <Button type="submit" variant="contained">
+        Submit Timesheet
       </Button>
-      <LoadingOverlay open={isLoading} />
-    </div>
+    </form>
   );
 }

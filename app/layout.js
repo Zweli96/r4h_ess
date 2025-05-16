@@ -5,6 +5,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { SessionProvider } from "../utils/provider";
 import { getSession } from "../utils/session";
 import Layout from "@/../../components/Layout";
+import LoadingProvider from "../components/LoadingContext"; // Adjust path
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 
@@ -27,38 +28,42 @@ export default async function RootLayout({ children }) {
           style={{ height: "100%", margin: 0 }}
         >
           <ThemeRegistry options={{ key: "mui-theme" }}>
-            <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
-              <CssBaseline />
-              {session ? (
-                <>
-                  <Layout />
-                  <Box
-                    component="main"
-                    sx={{
-                      flexGrow: 1,
-                      minHeight: "100vh",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Container
+            <LoadingProvider>
+              <Box sx={{ display: "flex", minHeight: "100vh", width: "100%" }}>
+                <CssBaseline />
+                {session ? (
+                  <>
+                    <Layout />
+                    <Box
+                      component="main"
                       sx={{
-                        mt: 10,
-                        mb: 4,
                         flexGrow: 1,
+                        minHeight: "100vh",
                         display: "flex",
                         flexDirection: "column",
                       }}
                     >
-                      {children}
-                    </Container>
+                      <Container
+                        sx={{
+                          mt: 10,
+                          mb: 4,
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
+                        {children}
+                      </Container>
+                    </Box>
+                  </>
+                ) : (
+                  <Box sx={{ minHeight: "100vh", width: "100%" }}>
+                    {children}
                   </Box>
-                </>
-              ) : (
-                <Box sx={{ minHeight: "100vh", width: "100%" }}>{children}</Box>
-              )}
-              {/*  */}
-            </Box>
+                )}
+                {/*  */}
+              </Box>
+            </LoadingProvider>
           </ThemeRegistry>
         </body>
       </html>

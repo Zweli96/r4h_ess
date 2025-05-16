@@ -25,7 +25,13 @@ export const fetchApprovals = async () => {
 export const submitApproval = async (id) => {
   try {
     const response = await axiosInstance.put(
-      `/timesheets/approvals/approve/${id}`
+      `/timesheets/approvals/approve/${id}`,
+      {}, // Empty body to satisfy JSON parsing
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response;
   } catch (error) {
@@ -38,7 +44,12 @@ export const submitRejection = async (id, rejection_reason) => {
   try {
     const response = await axiosInstance.put(
       `/timesheets/approvals/reject/${id}`,
-      { rejection_reason }
+      { rejection_reason },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
     );
     return response;
   } catch (error) {

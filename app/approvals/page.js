@@ -8,13 +8,18 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import { fetchApprovals, submitApproval, submitRejection } from "../api/api";
 import { signOut, useSession } from "next-auth/react";
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext";
+import { set } from "date-fns";
 
 const page = () => {
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
+  console.log("Timesheets: LoadingContext value:", context);
   const [approvals, setApprovals] = useState([]);
   const [selectedRejectTimesheet, setSelectedRejectTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);
-  const [loading, setLoading] = useState({});
   const [error, setError] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -30,7 +35,7 @@ const page = () => {
   const handleCloseSnackbar = () => setSnackbar({ ...snackbar, open: false });
 
   const handleReject = async (id, rejection_reason) => {
-    setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
+    setIsLoading(true);
     try {
       const response = await submitRejection(id, rejection_reason);
 
@@ -41,7 +46,7 @@ const page = () => {
           }`
         );
       }
-
+      setIsLoading(false);
       setSnackbar({
         open: true,
         message: "Timesheet rejected successfully!",
@@ -50,13 +55,14 @@ const page = () => {
       setRefresh((prev) => !prev); // Trigger a refresh
       setRejectDialogOpen(false);
     } catch (error) {
+      setIsLoading(false);
       setSnackbar({
         open: true,
         message: "Failed to approve timesheet.",
         type: "error",
       });
     } finally {
-      setLoading((prev) => ({ ...prev, [id]: false })); // Reset loading
+      setIsLoading(false);
     }
   };
 
@@ -66,7 +72,7 @@ const page = () => {
   };
 
   const handleApprove = async (id) => {
-    setLoading((prev) => ({ ...prev, [id]: true })); // Set loading for the specific item
+    setIsLoading(true);
     try {
       const response = await submitApproval(id);
 
@@ -77,7 +83,7 @@ const page = () => {
           }`
         );
       }
-
+      setIsLoading(false);
       setSnackbar({
         open: true,
         message: "Timesheet approved successfully!",
@@ -85,13 +91,14 @@ const page = () => {
       });
       setRefresh((prev) => !prev); // Trigger a refresh
     } catch (error) {
+      setIsLoading(false);
       setSnackbar({
         open: true,
         message: "Failed to approve timesheet.",
         type: "error",
       });
     } finally {
-      setLoading((prev) => ({ ...prev, [id]: false })); // Reset loading
+      setIsLoading(false);
     }
   };
 
@@ -106,13 +113,15 @@ const page = () => {
 
   useEffect(() => {
     const loadApprovals = async () => {
+      setIsLoading(true);
       try {
         const data = await fetchApprovals();
         setApprovals(data);
       } catch (error) {
+        setIsLoading(false);
         setError("Error fetching approvals");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     loadApprovals();
@@ -125,7 +134,6 @@ const page = () => {
         onApprove={handleApprove}
         onReject={handleOpenRejectDialog}
         onView={() => console.log("View handler")}
-        loading={loading}
       />
       <Snackbar
         open={snackbar.open}

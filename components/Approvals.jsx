@@ -26,7 +26,7 @@ const BoldTableCell = (props) => (
   <TableCell sx={{ fontWeight: "bold" }} {...props} />
 );
 
-const Approvals = ({ approvals, onApprove, onView, onReject, loading }) => {
+const Approvals = ({ approvals, onApprove, onView, onReject }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>Timesheet Approvals</Title>
@@ -65,13 +65,8 @@ const Approvals = ({ approvals, onApprove, onView, onReject, loading }) => {
                   <IconButton
                     onClick={() => onApprove(approval.id)}
                     color="primary"
-                    disabled={loading[approval.id]} // Disable button while loading
                   >
-                    {loading[approval.id] ? (
-                      <CircularProgress size={24} />
-                    ) : (
-                      <CheckCircleIcon />
-                    )}
+                    <CheckCircleIcon />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="Reject">

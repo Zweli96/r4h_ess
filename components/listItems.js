@@ -52,6 +52,10 @@ export const menu = [
         title: "Timesheet Report",
         to: "/timesheets/reports",
       },
+      // {
+      //   title: "View Timesheet",
+      //   to: "/timesheets/reports/viewTimesheet",
+      // },
     ],
   },
 ];

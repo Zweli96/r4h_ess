@@ -7,6 +7,7 @@ import CardActions from "@mui/material/CardActions";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
+import CustomLink from "./CustomLink";
 import ApprovalsAvatar from "./ApprovalsAvatar";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
@@ -37,9 +38,9 @@ export default function ApprovalsCard({ pending_count = 0 }) {
       >
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Link href="/approvals">
+            <CustomLink href="/approvals">
               <ApprovalsAvatar pending_count={pending_count} size={48} />
-            </Link>
+            </CustomLink>
             <Box sx={{ ml: 2 }}>
               <Typography variant="h6" color="text.primary">
                 {isPending ? `Approvals ` : "No Approvals Waiting"}

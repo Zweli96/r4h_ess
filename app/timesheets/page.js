@@ -1,13 +1,9 @@
 "use client";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import React, { useState, useEffect } from "react";
-import {
-  getFullDateRange,
-  chunkDaysByWeek,
-  calcChunkGrandTotal,
-  calcColumnTotal,
-  calcChunkLOE,
-} from "@../../../utils/utils";
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext";
+import { getFullDateRange, chunkDaysByWeek } from "@../../../utils/utils";
 import TimeSheetWeek from "../../components/TimeSheetWeek";
 import TimesheetSummary from "../../components/TimesheetSammary";
 import TimesheetSelectors from "../../components/TimesheetSelectors";
@@ -17,22 +13,8 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useRouter } from "next/navigation";
 
-import {
-  Container,
-  Typography,
-  Box,
-  TextField,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Button,
-  Select,
-  MenuItem,
-  TableContainer,
-  Paper,
-} from "@mui/material";
+import { Container, Typography } from "@mui/material";
+import { set } from "date-fns";
 
 //declaring actities and loa activities
 let LOE_ACTIVITIES = [];
@@ -58,6 +40,8 @@ function initChunkData(numDays) {
 export default function TimesheetPage() {
   //declaring session and other variables
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
 
   const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState(defaultSelectedMonth);
@@ -431,6 +415,7 @@ export default function TimesheetPage() {
     //   });
     // Assuming this code is inside an async function (e.g., a form submission handler)
     try {
+      setIsLoading(true);
       const response = await axiosInstance.post(
         "/timesheets/timesheets",
         data,
@@ -445,15 +430,18 @@ export default function TimesheetPage() {
       console.log("Response:", result);
 
       if (result.id) {
+        setIsLoading(false);
         setSnackbar({
           open: true,
-          message: "Timesheet submitted successfully!",
+          message:
+            "Timesheet submitted successfully! Redirecting to My Timesheets...",
           type: "success",
         });
         setTimeout(() => {
           router.push("/timesheets/history");
         }, 5000);
       } else {
+        setIsLoading(false);
         setSnackbar({
           open: true,
           message: "Submission failed. Please check your data.",
@@ -461,12 +449,15 @@ export default function TimesheetPage() {
         });
       }
     } catch (error) {
+      setIsLoading(false);
       console.error("Error:", error);
       setSnackbar({
         open: true,
         message: "An error occurred while submitting the timesheet.",
         type: "error",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -510,7 +501,7 @@ export default function TimesheetPage() {
       )}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={3000}
+        autoHideDuration={10000}
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >

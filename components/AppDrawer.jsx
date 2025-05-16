@@ -14,6 +14,7 @@ import Collapse from "@mui/material/Collapse";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Link from "next/link";
+import CustomLink from "./CustomLink";
 import { useState } from "react";
 import MuiDrawer from "@mui/material/Drawer";
 import { useSession } from "next-auth/react"; // Import useSession
@@ -55,12 +56,12 @@ const MenuItem = ({ item, drawerOpen }) => {
 
 const SingleLevel = ({ item }) => {
   return (
-    <Link href={item.to}>
-      <ListItem button>
+    <CustomLink href={item.to}>
+      <ListItem>
         <ListItemIcon>{item.icon}</ListItemIcon>
         <ListItemText primary={item.title} />
       </ListItem>
-    </Link>
+    </CustomLink>
   );
 };
 
