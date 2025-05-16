@@ -72,11 +72,12 @@ const MyTimesheets = ({ timesheets, onView, onInfo, loading }) => {
               <TableCell align="center">{timesheet.total_hours}</TableCell>
               <TableCell align="center">{timesheet.leave_days}</TableCell>
               <TableCell align="center">
-                <Tooltip title="View">
-                  <IconButton>
+                
+                  <IconButton   onClick={() => onView(timesheet.id)}
+                    >
                     <VisibilityIcon />
                   </IconButton>
-                </Tooltip>
+               
                 <Tooltip title="Information">
                   <IconButton
                     onClick={() => onInfo(timesheet)}

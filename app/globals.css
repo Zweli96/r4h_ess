@@ -171,3 +171,6 @@ select {
 .visible {
   visibility: visible;
 }
+#pdf-content {
+  font-size: 12pt;
+}

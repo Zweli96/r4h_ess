@@ -22,32 +22,32 @@ export const menu = [
       },
     ],
   },
-  {
-    icon: <MeetingRoomIcon />,
-    title: "Leave",
-    items: [
-      {
-        title: "Apply",
-        to: "/leave",
-      },
-      {
-        title: "My Leave",
-        to: "/leave/history",
-      },
-      {
-        title: "Approvals",
-        to: "/leave/apporvals",
-      },
-    ],
-  },
+  // {
+  //   icon: <MeetingRoomIcon />,
+  //   // title: "Leave",
+  //   // items: [
+  //   //   {
+  //   //     title: "Apply",
+  //   //     to: "/leave",
+  //   //   },
+  //     // {
+  //     //   title: "My Leave",
+  //     //   to: "/leave/history",
+  //     // },
+  //     {
+  //       title: "Approvals",
+  //       to: "/leave/apporvals",
+  //     },
+  //   ],
+  // },
   {
     icon: <ArticleIcon />,
     title: "Reports",
     items: [
-      {
-        title: "Compliance Report",
-        to: "/reports/compliance",
-      },
+      // {
+      //   title: "Compliance Report",
+      //   to: "/reports/compliance",
+      // },
       {
         title: "Timesheet Report",
         to: "/timesheets/reports",
