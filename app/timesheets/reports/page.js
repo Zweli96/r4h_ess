@@ -23,6 +23,8 @@ import {
   DialogContent,
   IconButton,
   MenuItem,
+  Paper,
+  Box
 } from "@mui/material";
 import InfoIcon from "@mui/icons-material/Info";
 import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
@@ -265,35 +267,31 @@ const TimesheetReports = () => {
       }
       if (filters.format === "pdf") {
         setFilteredData(filteredData);
-        setTimeout(() => {
-          const element = document.getElementById("pdf-content");
-          if (element) {
-            element.classList.remove("hidden");
-            element.classList.add("visible");
-            const opt = {
-              margin: 0.1,
-              filename: `${fileName}.pdf`,
-              image: { type: "jpeg", quality: 0.98 },
-              html2canvas: { scale: 2 },
-              jsPDF: {
-                unit: "mm",
-                format: "a4",
-                orientation: "potrait",
-              },
-              pagebreak: { mode: "avoid-all" },
-            };
-            html2pdf()
-              .set(opt)
-              .from(element)
-              .save()
-              .then(() => {
-                element.classList.remove("visible");
-                element.classList.add("hidden");
-              });
-          } else {
-            console.error("PDF content not found");
-          }
-        }, 1000);
+       window.setTimeout(() => {
+        const downloadelement = document.getElementById("pdf-content");
+        if (downloadelement) {
+          downloadelement.classList.remove("hidden");
+          downloadelement.classList.add("visible");
+          const opt = {
+            margin: 0.2,
+            filename: `Timesheet Report_${filters.district}_${filters.startDate}_to_${filters.endDate}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
+          };
+
+          html2pdf()
+            .set(opt)
+            .from(downloadelement)
+            .save()
+            .then(() => {
+              downloadelement.classList.remove("visible");
+              downloadelement.classList.add("hidden");
+            });
+        } else {
+          console.error("PDF content not found");
+        }
+      }, 1000);
       }
     } else {
       alert("No data available for the selected filters.");
@@ -314,7 +312,8 @@ const TimesheetReports = () => {
     page * rowsPerPage + rowsPerPage
   );
   return (
-    <div>
+    <div >
+      <Box >
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Export Timesheet Report</DialogTitle>
         <DialogContent>
@@ -430,9 +429,9 @@ const TimesheetReports = () => {
           ))}
         </TableBody>
       </Table>
-
+{/* pagination  */}
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
+        rowsPerPageOptions={[5, 10, 25,50,75,100]}
         component="div"
         count={filteredTimesheets.length}
         rowsPerPage={rowsPerPage}
@@ -441,14 +440,19 @@ const TimesheetReports = () => {
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
 
+      {/* container for downloading filtered report */}
       <PdfTimesheetTable data={filteredData} />
 
+
+      {/* container for downloading individual timesheet */}
       <div id="content" className="hidden">
         <ViewTimesheet
           viewedTimesheet={viewedTimesheet}
           viewedpageTimesheet={viewedpageTimesheet}
         />
       </div>
+
+      </Box>
     </div>
   );
 };

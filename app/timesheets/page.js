@@ -13,7 +13,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useRouter } from "next/navigation";
 
-import { Container, Typography } from "@mui/material";
+import { Container, Paper, Typography } from "@mui/material";
 import { set } from "date-fns";
 
 //declaring actities and loa activities
@@ -92,7 +92,7 @@ export default function TimesheetPage() {
   const fetchActivities = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8000/api/timesheets/activities"
+        "/api/proxy/timesheets/activities"
       );
       const data = await response.json();
       setActivities(data);
@@ -467,7 +467,7 @@ export default function TimesheetPage() {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 4 }}>
+    <Container maxWidth="xl" sx={{ mt: 4 }} >
       <Typography variant="h5" gutterBottom>
         Timesheet (Monthly)
       </Typography>

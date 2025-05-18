@@ -20,17 +20,11 @@ const PdfTimesheetTable = ({ data }) => {
 
   return (
     <div id="pdf-content" className="hidden" style={{ padding: 20 }}>
-      <Image
-        component="img"
-        sx={{
-          height: "100%",
-          width: "100%",
-          maxHeight: { xs: 233, md: 167 },
-          maxWidth: { xs: 350, md: 250 },
-        }}
-        src={ESSIcon}
-        alt="R4H LOGO"
-      />
+    <img
+  src="/r4hlogo.png"
+  alt="R4H LOGO"
+  className="print-logo"
+/>
       <Typography
         variant="h5"
         gutterBottom

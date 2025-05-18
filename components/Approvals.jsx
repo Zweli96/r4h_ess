@@ -14,7 +14,7 @@ import Checkbox from "@mui/material/Checkbox";
 import Tooltip from "@mui/material/Tooltip";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
-import { IconButton } from "@mui/material";
+import { IconButton, Paper, TableContainer } from "@mui/material";
 import { format } from "date-fns";
 import CircularProgress from "@mui/material/CircularProgress";
 
@@ -30,7 +30,8 @@ const Approvals = ({ approvals, onApprove, onView, onReject }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>Timesheet Approvals</Title>
-      <Table size="small">
+      <TableContainer  component={Paper} sx={{ overflowX: "auto" }}>
+      <Table size="small" sx={{ minWidth: 1000,maxWidth:'100vw' }} stickyHeader>
         <TableHead>
           <TableRow>
             <BoldTableCell>Name</BoldTableCell>
@@ -82,6 +83,7 @@ const Approvals = ({ approvals, onApprove, onView, onReject }) => {
           ))}
         </TableBody>
       </Table>
+      </TableContainer>
     </Box>
   );
 };

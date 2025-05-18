@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import TimeSheetWeekView from "../components/TimeSheetWeekView";
 import Image from "next/image";
-import ESSIcon from "../public/r4hlogo.jpg";
+import ESSIcon from "../public/r4hlogo.png";
 
 export default function Viewtimesheet({ viewedTimesheet,viewedpageTimesheet}) {
   const [chunkedDays, setChunkedDays] = useState([]);
   const [chunkedData, setChunkedData] = useState([]);
   const [activities, setActivities] = useState([]);
   const [loeActivities, setLoeActivities] = useState([]);
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  
   useEffect(() => {
     if (!viewedTimesheet) return;
     const { filled_timesheet } = viewedTimesheet;
@@ -21,6 +23,13 @@ export default function Viewtimesheet({ viewedTimesheet,viewedpageTimesheet}) {
 
     //setting last index of dates array as end date
     const endDate = new Date(dates[dates.length - 1]);
+
+    const startDateStr = dates[0]; // already in YYYY-MM-DD format
+const endDateStr = dates[dates.length - 1]; // also in correct format
+
+setStartDate(startDateStr);
+setEndDate(endDateStr);
+
 
     const allDays = [];
 
@@ -128,18 +137,43 @@ setChunkedData(dataChunks);
   }, [viewedTimesheet]);
 
   
+
+  const formatDateTime = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    const hh = String(date.getHours()).padStart(2, "0");
+    const min = String(date.getMinutes()).padStart(2, "0");
+    const ss = String(date.getSeconds()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+  };
+  
   return (
     <div style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
       {viewedpageTimesheet === "download" && viewedTimesheet && (
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <Image
-            src={ESSIcon}
-            alt="R4H LOGO"
-            style={{ height: "auto", width: "auto", marginBottom: 10 }}
-          />
+        <div style={{ textAlign: "left", marginBottom: 20 }}>
+          
+
+{/* <Image
+  src={ESSIcon}
+  alt="R4H LOGO"
+  width={'auto'}  // Replace with actual width
+  height={'auto'} // Replace with actual height
+  style={{ marginBottom: 10 }} 
+/> */}
+<img
+  src="/r4hlogo.png"
+  alt="R4H LOGO"
+  className="print-logo"
+/>
+
+
           <h1 style={{ fontSize: 26, fontWeight: "bold", marginBottom: 10 }}>
-            Timesheet For {viewedTimesheet.period}
+            Timesheet For {viewedTimesheet.period} ({startDate} - {endDate})
           </h1>
+          {/* <div className="timesheetdeatils">
           <div style={{ fontSize: 20, marginBottom: 5 }}>
             Submitted by: {viewedTimesheet.created_by_full_name} - {viewedTimesheet.total_hours} hrs 
           </div>
@@ -149,6 +183,35 @@ setChunkedData(dataChunks);
           <div style={{ fontSize: 20, marginBottom: 10 }}>
             HR Approval: {viewedTimesheet.second_approver_full_name}
           </div>
+          </div> */}
+          <div className="timesheet-details" style={{
+  display: 'flex',
+  flexDirection: 'row', // horizontal
+  justifyContent: 'start', // or 'start', 'center' etc.
+  padding: 20,
+  fontFamily: 'Arial, sans-serif',
+  fontSize: 18,
+  textTransform:'capitalize',
+  gap: 40, // spacing between items
+  flexWrap: 'wrap' // allow wrapping on smaller screens
+}}>
+ 
+  <div >
+    <span style={{ fontWeight: 'bold' }}>Submitted by:</span> 
+    <span style={{borderBottom:'2px solid black',padding:'2px',marginLeft:'10px'}}>{viewedTimesheet.created_by_full_name} - {formatDateTime(viewedTimesheet.edited_at)} </span>
+    
+  </div>
+  <div>
+    <span style={{ fontWeight: 'bold' }}>Line Manager Approval:</span> 
+    <span style={{borderBottom:'2px solid black',padding:'2px',marginLeft:'10px'}}>{viewedTimesheet.line_manager_full_name} - {formatDateTime(viewedTimesheet.first_approval_date)}</span>
+  </div>
+  <div>
+    <span style={{ fontWeight: 'bold' }}>HR Approval:</span> 
+    <span style={{borderBottom:'2px solid black',padding:'2px',marginLeft:'10px'}}>{viewedTimesheet.second_approver_full_name} - {formatDateTime(viewedTimesheet.second_approval_date)}</span>
+  </div>
+</div>
+
+        
         </div>
 
         
@@ -167,7 +230,11 @@ setChunkedData(dataChunks);
           />
         ))
       )}
-   
+       {viewedTimesheet && (
+    <div><span style={{fontWeight:'bolder'}}>Grand total Hours</span> : <span style={{borderBottom: '2px solid black'}}>{viewedTimesheet.total_hours} hrs</span> </div>
+       )}
     </div>
+       
+   
   );
 }

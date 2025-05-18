@@ -1,8 +1,38 @@
 
 import React from 'react';
 import { Box, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@mui/material';
-
+import  { useState, useEffect } from "react";
+import { fetchActivities } from "../app/api/api";
 const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
+  const [activities, setActivities] = useState([]);
+ // getting activities from database
+ const fetchActivities = async () => {
+  try {
+    const response = await fetch(
+      "/api/proxy/timesheets/activities"
+    );
+    const data = await response.json();
+    console.log(data)
+    setActivities(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+  useEffect(() => {
+    fetchActivities();
+//     let activities_data = fetchActivities();
+//  setActivities(activities_data);
+  }, []);
+
+
+//assigning loa activities from database
+const loeActivities = activities.filter((activity) => activity.is_loe);
+const LOE_ACTIVITIES = loeActivities.map((activity) => activity.name);
+
+
+  // const LOE_ACTIVITIES = ["Leave", "Other LOE Activity"];
+
   if (!daysChunk.length || !chunkRows.length) return null;
 
   const calcRowTotal = (row) => {
@@ -18,6 +48,17 @@ const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
   };
 
   const chunkTotal = calcChunkGrandTotal(chunkRows);
+
+
+  const calcLOE = (chunkRows, chunkTotal) => {
+    const loeHours = chunkRows.reduce((sum, row) => {
+      if (LOE_ACTIVITIES.includes(row.activity)) {
+        return sum + calcRowTotal(row);
+      }
+      return sum;
+    }, 0);
+    return chunkTotal > 0 ? (loeHours / chunkTotal) * 100 : 0;
+  };
 
   return (
     <Box sx={{ mb: 3 }}>
@@ -36,7 +77,11 @@ const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
               <TableCell align="center" sx={{ fontWeight: 'bold', minWidth: '80px', border: '1px solid black' }}>
                 Total Hours
               </TableCell>
-              {/* <TableCell>Loe %</TableCell> */}
+              <TableCell>Loe %</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', minWidth: '100px', border: '1px solid black' }}>
+  Charge
+</TableCell>
+
             </TableRow>
             <TableRow>
               <TableCell sx={{ fontWeight: 'bold', backgroundColor: '#C0C0C0', border: '1px solid black' }} />
@@ -45,7 +90,8 @@ const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
                   {d.dayName}
                 </TableCell>
               ))}
-              {/* <TableCell /> */}
+              <TableCell />
+              <TableCell />
               <TableCell />
             </TableRow>
             
@@ -84,7 +130,11 @@ const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
       <TableCell align="center" sx={{ minWidth: '80px', border: '1px solid black' }}>
         {calcRowTotal(row)}
       </TableCell>
-      {/* <TableCell /> */}
+      <TableCell align="center" sx={{ minWidth: '80px', border: '1px solid black' }}>
+            {LOE_ACTIVITIES.includes(row.activity) ? `${((calcRowTotal(row) / chunkTotal) * 100).toFixed(2)}%` : ''}
+          </TableCell>
+          <TableCell sx={{ minWidth: '100px', border: '1px solid black' }}></TableCell>
+
     </TableRow>
   ))}
 
@@ -98,7 +148,11 @@ const TimeSheetWeekView = ({ daysChunk, chunkRows }) => {
               <TableCell align="center" sx={{ border: '1px solid black', fontWeight: 'bold', minWidth: '80px' }}>
                 {chunkTotal}
               </TableCell>
-              {/* <TableCell></TableCell> */}
+              <TableCell align="center" sx={{ border: '1px solid black', fontWeight: 'bold', minWidth: '80px' }}>
+          {`${calcLOE(chunkRows, chunkTotal).toFixed(2)}%`}
+        </TableCell>
+        <TableCell sx={{ minWidth: '100px', border: '1px solid black' }}></TableCell>
+
             </TableRow>
           </TableBody>
         </Table>

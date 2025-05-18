@@ -32,7 +32,7 @@ const TimeSheetWeek = ({
   return (
     <Box key={`chunk-${chunkIndex}`} sx={{ mb: 4 }}>
       <TableContainer
-        component={Paper}
+      
         sx={{ border: "", boxShadow: "none", borderRadius: 0 }}
       >
         <Table
