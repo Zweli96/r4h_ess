@@ -10,39 +10,32 @@ import Title from "../../components/Title";
 import axios from "axios";
 import Typography from "@mui/material/Typography";
 import { fetchApprovals } from "../api/api";
+import { useContext } from "react";
+import { LoadingContext } from "../../components/LoadingContext";
 
 export default function Home() {
   const { data: session, status } = useSession({ required: true });
+  const context = useContext(LoadingContext);
+  const { setIsLoading } = context || {};
   const [approvals, setApprovals] = useState([]);
   const [response, setResponse] = useState("{}");
 
   useEffect(() => {
     const loadApprovals = async () => {
+      setIsLoading(true);
       try {
         const data = await fetchApprovals();
+        setIsLoading(false);
         setApprovals(data);
       } catch (error) {
+        setIsLoading(false);
         console.log("Error fetching approvals" + error);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadApprovals();
   }, []);
-
-  const getUserDetails = async (useToken) => {
-    try {
-      const response = await axios({
-        method: "get",
-        url: process.env.NEXT_PUBLIC_BACKEND_URL + "auth/user/",
-        headers: useToken
-          ? { Authorization: "Bearer " + session?.access_token }
-          : {},
-      });
-      console.log(response);
-      setResponse(JSON.stringify(response.data));
-    } catch (error) {
-      setResponse(error.message);
-    }
-  };
 
   if (status == "loading") {
     return <CircularProgress />;
