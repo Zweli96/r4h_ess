@@ -63,7 +63,7 @@ const page = () => {
 
   const handleView = async (id) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/timesheets/${id}/`, {
+      const response = await fetch(`/api/proxy/timesheets/${id}/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
