@@ -30,7 +30,7 @@ const Approvals = ({ approvals, onApprove, onView, onReject }) => {
   return (
     <Box sx={{ display: "block" }}>
       <Title>Timesheet Approvals</Title>
-      <TableContainer  component={Paper} sx={{ overflowX: "auto" }}>
+      <TableContainer  component={Paper} sx={{ overflowX: "auto" ,boxShadow: "none", borderRadius: 0 }}>
       <Table size="small" sx={{ minWidth: 1000,maxWidth:'100vw' }} stickyHeader>
         <TableHead>
           <TableRow>

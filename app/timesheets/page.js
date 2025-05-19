@@ -469,7 +469,7 @@ export default function TimesheetPage() {
   return (
     <Container maxWidth="xl" sx={{ mt: 4 }} >
       <Typography variant="h5" gutterBottom>
-        Timesheet (Monthly)
+        Timesheet Submission (Monthly)
       </Typography>
       <TimesheetSelectors
         selectedMonth={selectedMonth}

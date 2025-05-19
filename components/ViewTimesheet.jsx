@@ -188,7 +188,7 @@ setChunkedData(dataChunks);
   display: 'flex',
   flexDirection: 'row', // horizontal
   justifyContent: 'start', // or 'start', 'center' etc.
-  padding: 20,
+marginTop:-1,
   fontFamily: 'Arial, sans-serif',
   fontSize: 18,
   textTransform:'capitalize',

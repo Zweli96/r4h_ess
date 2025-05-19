@@ -143,6 +143,7 @@ const page = () => {
     width: '100%', 
     overflowX: 'auto',  // Enables horizontal scroll
     maxHeight: 'calc(100vh - 100px)', // Optional: keeps it within the viewport
+    boxShadow: "none", borderRadius: 0 
   }} 
   component={Paper} >
       <Approvals
