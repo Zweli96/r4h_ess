@@ -1,7 +1,7 @@
 // frontend/app/api/proxy/[...path]/route.js
 import { NextResponse } from "next/server";
 
-export async function handler(request, { params }) {
+async function handler(request, { params }) {
   const { path } = params; // Capture dynamic path segments
   const backendUrl = `${process.env.NEXTAUTH_BACKEND_URL}${
     path ? path.join("/") : ""
