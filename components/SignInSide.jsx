@@ -82,14 +82,21 @@ export default function SignInSide() {
         sm={4}
         md={7}
         sx={{
-          backgroundImage:
-            "url(https://i.ibb.co/x5JDJVQ/Outdoor-Signage-Mockup-R4-H.jpg)",
-          backgroundRepeat: "no-repeat",
+          position: "relative", // Required for absolute positioning of Image
           backgroundColor: (t) => getBackgroundColor(t),
-          backgroundSize: "cover",
-          backgroundPosition: "center",
         }}
-      />
+      >
+        <Image
+          src="/Outdoor-Signage-Mockup-R4H.jpg"
+          alt="Outdoor Signage"
+          fill // Replaces layout="fill" in Next.js 13+, makes image fill the parent
+          style={{
+            objectFit: "cover", // Mimics backgroundSize: cover
+            objectPosition: "center", // Mimics backgroundPosition: center
+          }}
+          priority // Optional: for above-the-fold images to improve LCP
+        />
+      </Grid>
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <Box
           sx={{
