@@ -177,7 +177,7 @@ const MyTimesheets = ({ timesheets, onView, onInfo, loading }) => {
   return (
     <Box sx={{ display: "block", width: "100%" }}>
       <Title>My Timesheets</Title>
-      <Box sx={{ height: 400, width: "100%", overflowX: "auto" }}>
+      <Box sx={{ width: "100%", overflowX: "auto" }}>
         <DataGrid
           rows={processedTimesheets}
           columns={columns}
