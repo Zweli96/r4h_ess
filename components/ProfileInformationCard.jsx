@@ -27,6 +27,7 @@ export default function ProfileInformationCard({
         width: { xs: "100%", sm: "100%", md: "40%" },
         maxWidth: "600px",
         minWidth: { xs: "100%", md: "300px" },
+        minHeight: { xs: "50%", md: "180px" },
         display: "flex",
         alignSelf: "center",
         justifyContent: "center",

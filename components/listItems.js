@@ -45,13 +45,17 @@ export const menu = [
     icon: <ArticleIcon />,
     title: "Reports",
     items: [
-      // {
-      //   title: "Compliance Report",
-      //   to: "/reports/compliance",
-      // },
+      {
+        title: "Compliance",
+        to: "/timesheets/reports/compliance",
+      },
       {
         title: "Timesheet Report",
         to: "/timesheets/reports",
+      },
+      {
+        title: "Training Report",
+        to: "/trainings/reports",
       },
       // {
       //   title: "View Timesheet",
