@@ -6,6 +6,7 @@ import ApprovalsWaitingCard from "../../components/ApprovalsCard";
 import DaysUntilTimesheetCard from "../../components/DaysUntilTimesheet";
 import ProfileInformationCard from "../../components/ProfileInformationCard";
 import ApprovalsCard from "../../components/ApprovalsCard";
+import TrainingInformationCard from "../../components/TrainingInformationCard";
 import Title from "../../components/Title";
 import axios from "axios";
 import Typography from "@mui/material/Typography";
@@ -60,6 +61,15 @@ export default function Home() {
             district={session.user.staff.district}
             department={session.user.staff.department}
             line_manager={session.user.staff.line_manager}
+          />
+          <TrainingInformationCard
+            completedTrainings={
+              session.user.training_status.completed_trainings
+            }
+            totalTrainings={session.user.training_status.total_trainings}
+            incompleteTrainingNames={
+              session.user.training_status.incomplete_training_names
+            }
           />
         </Stack>
         <br />

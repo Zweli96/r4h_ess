@@ -2,35 +2,36 @@
 import Approvals from "../../components/Approvals";
 import RejectTimesheetDialog from "../../components/RejectTimesheetDialog";
 import Box from "@mui/material/Box";
-import Nav from "../../components/Navbar";
 import React, { useState, useEffect } from "react";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 import ViewTimesheet from "../../components/ViewTimesheet.jsx";
 import { fetchApprovals, submitApproval, submitRejection } from "../api/api";
 import { signOut, useSession } from "next-auth/react";
 import { useContext } from "react";
 import { LoadingContext } from "../../components/LoadingContext";
-import { set } from "date-fns";
 import { Paper } from "@mui/material";
 
 const page = () => {
   const { data: session, status } = useSession({ required: true });
   const context = useContext(LoadingContext);
   const { setIsLoading } = context || {};
-  console.log("Timesheets: LoadingContext value:", context);
   const [approvals, setApprovals] = useState([]);
   const [selectedRejectTimesheet, setSelectedRejectTimesheet] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [error, setError] = useState(null);
   const [viewTimesheetOpen, setViewTimesheetOpen] = useState(false);
-   const [viewedTimesheet, setViewedTimesheet] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", type: "success", });
+  const [viewedTimesheet, setViewedTimesheet] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    type: "success",
+  });
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
 
   const handleCloseRejectDialog = () => {
@@ -43,7 +44,11 @@ const page = () => {
     try {
       const response = await submitRejection(id, rejection_reason);
       if (response.status !== 200) {
-        throw new Error(`Rejection failed: ${response.status}: ${response.data.message || "Unknown error"}`);
+        throw new Error(
+          `Rejection failed: ${response.status}: ${
+            response.data.message || "Unknown error"
+          }`
+        );
       }
       setIsLoading(false);
       setSnackbar({
@@ -75,7 +80,11 @@ const page = () => {
     try {
       const response = await submitApproval(id);
       if (response.status !== 200) {
-        throw new Error(`Approval failed: ${response.status}: ${response.data.message || "Unknown error"}`);
+        throw new Error(
+          `Approval failed: ${response.status}: ${
+            response.data.message || "Unknown error"
+          }`
+        );
       }
       setIsLoading(false);
       setSnackbar({
@@ -139,19 +148,22 @@ const page = () => {
   }, [refresh]);
 
   return (
-    <Box   sx={{ 
-    width: '100%', 
-    overflowX: 'auto',  // Enables horizontal scroll
-    maxHeight: 'calc(100vh - 100px)', // Optional: keeps it within the viewport
-    boxShadow: "none", borderRadius: 0 
-  }} 
-  component={Paper} >
+    <Box
+      sx={{
+        width: "100%",
+        overflowX: "auto", // Enables horizontal scroll
+        maxHeight: "calc(100vh - 100px)", // Optional: keeps it within the viewport
+        boxShadow: "none",
+        borderRadius: 0,
+      }}
+      component={Paper}
+    >
       <Approvals
         approvals={approvals}
         onApprove={handleApprove}
         onReject={handleOpenRejectDialog}
         onView={handleView}
-        style={{scrollX:true}}
+        style={{ scrollX: true }}
       />
       <Snackbar
         open={snackbar.open}
@@ -178,24 +190,27 @@ const page = () => {
         contentText="Please enter your reason for rejecting this timesheet."
       />
 
-      <Dialog 
-  open={viewTimesheetOpen} 
-  onClose={handleCloseViewTimesheet} 
-  fullWidth={true} 
-  maxWidth={'xl'}
->{viewedTimesheet && 
-  <>
-    <DialogTitle>Timesheet for {viewedTimesheet.created_by_full_name} - {viewedTimesheet.period}</DialogTitle>
-    <DialogContent>
-      <ViewTimesheet viewedTimesheet={viewedTimesheet} />
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={handleCloseViewTimesheet}>Close</Button>
-    </DialogActions>
-  </>
-}
-</Dialog>
-
+      <Dialog
+        open={viewTimesheetOpen}
+        onClose={handleCloseViewTimesheet}
+        fullWidth={true}
+        maxWidth={"xl"}
+      >
+        {viewedTimesheet && (
+          <>
+            <DialogTitle>
+              Timesheet for {viewedTimesheet.created_by_full_name} -{" "}
+              {viewedTimesheet.period}
+            </DialogTitle>
+            <DialogContent>
+              <ViewTimesheet viewedTimesheet={viewedTimesheet} />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseViewTimesheet}>Close</Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </Box>
   );
 };

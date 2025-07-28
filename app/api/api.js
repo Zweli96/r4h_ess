@@ -22,6 +22,19 @@ export const fetchApprovals = async () => {
   }
 };
 
+export const fetchTrainingReports = async () => {
+  try {
+    const response = await axiosInstance.get(
+      "/training/user-progress-report-list/"
+    );
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching training reports:", error);
+    throw error;
+  }
+};
+
 export const submitApproval = async (id) => {
   try {
     const response = await axiosInstance.put(
