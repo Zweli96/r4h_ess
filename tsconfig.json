@@ -28,7 +28,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "utils/trainingUtils.js"  ],
   "exclude": [
     "node_modules"
   ]

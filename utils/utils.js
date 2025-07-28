@@ -99,3 +99,64 @@ export const calcChunkLOE = (chunkRows, chunkTotal) => {
   }, 0);
   return chunkTotal > 0 ? (loeHours / chunkTotal) * 100 : 0;
 };
+
+
+export const getProgress = (completedChapters, courseId, totalChapters) => {
+  const completed = completedChapters[courseId]?.completed_chapters.length || 0;
+  return (completed / (totalChapters || 1)) * 100;
+};
+
+export const generateCertificatePDF = async (Certificate, userName, courseTitle, date) => {
+  const container = document.createElement("div");
+  container.id = "print-certificate";
+  container.style.cssText = `
+    width: 794px;
+    height: 1123px;
+    padding: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    overflow: hidden;
+  `;
+  document.body.appendChild(container);
+
+  const ReactDOM = await import("react-dom");
+
+  ReactDOM.render(
+    <Certificate userName={userName} courseTitle={courseTitle} date={date} />,
+    container,
+    () => {
+      const opt = {
+        margin: 0,
+        filename: `certificate_${courseTitle}_${userName}.pdf`,
+        image: { type: "jpeg", quality: 1 },
+        html2canvas: {
+          scale: 2,
+          scrollX: 0,
+          scrollY: 0,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          width: 794,
+          height: 1123,
+        },
+        jsPDF: {
+          unit: "px",
+          format: [794, 1123],
+          orientation: "portrait",
+        },
+      };
+
+      html2pdf()
+        .set(opt)
+        .from(container)
+        .save()
+        .then(() => {
+          document.body.removeChild(container);
+        });
+    }
+  );
+};
