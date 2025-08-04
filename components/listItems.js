@@ -1,7 +1,7 @@
 import * as React from "react";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import SchoolIcon from '@mui/icons-material/School';
+import SchoolIcon from "@mui/icons-material/School";
 import ArticleIcon from "@mui/icons-material/Article";
 
 export const menu = [
@@ -57,14 +57,10 @@ export const menu = [
         title: "Training Report",
         to: "/trainings/reports",
       },
-      // {
-      //   title: "View Timesheet",
-      //   to: "/timesheets/reports/viewTimesheet",
-      // },
     ],
   },
 
-   {
+  {
     icon: <SchoolIcon />,
     title: "Trainings",
     items: [
@@ -74,8 +70,8 @@ export const menu = [
       // },
       {
         title: "Available Trainings",
-        to: "/Trainings/",
-      }
+        to: "/trainings/",
+      },
     ],
   },
 ];

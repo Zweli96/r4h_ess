@@ -1,12 +1,13 @@
 "use client";
-import { useState } from "react";
-import Button from "@mui/material/Button";
-function SearchButton({}) {
+import React from "react";
+import { Button } from "@mui/material";
+
+function ExportReportButton({ onClick }) {
   return (
-    <div className="flex gap-4">
-      <Button variant="contained">Export Reports</Button>
-    </div>
+    <Button variant="contained" color="primary" onClick={onClick}>
+      Export Reports
+    </Button>
   );
 }
 
-export default SearchButton;
+export default ExportReportButton;

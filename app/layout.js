@@ -16,7 +16,6 @@ export default async function RootLayout({ children }) {
   let session = null;
   try {
     session = await getSession();
-    console.log("Session fetched:", session); // Debug session
   } catch (error) {
     console.error("Error fetching session:", error);
   }
@@ -28,11 +27,21 @@ export default async function RootLayout({ children }) {
           <title>R4H ESS</title>
           <meta name="description" content="R4H Employee Self Service System" />
         </head>
-        <body className={roboto.className} style={{ height: "100%", margin: 0 }}>
+        <body
+          className={roboto.className}
+          style={{ height: "100%", margin: 0 }}
+        >
           <ThemeRegistry options={{ key: "mui-theme" }}>
             <LoadingProvider>
               <Suspense fallback={<Box sx={{ p: 2 }}>Loading...</Box>}>
-                <Box sx={{ display: "flex", minHeight: "100vh", width: "100%", bgcolor: "#f5f5f5" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    minHeight: "100vh",
+                    width: "100%",
+                    bgcolor: "#f5f5f5",
+                  }}
+                >
                   <CssBaseline />
                   {session && <Layout />}
                   <Box

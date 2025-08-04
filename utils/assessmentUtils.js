@@ -1,5 +1,5 @@
-import html2pdf from 'html2pdf.js';
-import AssessmentCertificate from '../components/AssessmentCertificate';
+import html2pdf from "html2pdf.js";
+import AssessmentCertificate from "../components/AssessmentCertificate";
 
 /**
  * Fetches course and progress data for the assessment.
@@ -9,29 +9,40 @@ import AssessmentCertificate from '../components/AssessmentCertificate';
  */
 export async function fetchAssessmentData(courseId, userId) {
   try {
-    console.log('Fetching course data for courseId:', courseId);
-    const courseRes = await fetch(`http://localhost:8000/api/training/courses/${courseId}/`);
+    console.log("Fetching course data for courseId:", courseId);
+    const courseRes = await fetch(
+      `http://localhost:8000/api/training/courses/${courseId}/`
+    );
     if (!courseRes.ok) {
       const errorText = await courseRes.text();
-      throw new Error(`Failed to fetch course: ${courseRes.status} ${errorText.slice(0, 100)}`);
+      throw new Error(
+        `Failed to fetch course: ${courseRes.status} ${errorText.slice(0, 100)}`
+      );
     }
     const courseData = await courseRes.json();
 
-    console.log('Fetching progress for userId:', userId);
-    const progressRes = await fetch(`http://localhost:8000/api/training/user-progress/?user_id=${userId}`);
+    console.log("Fetching progress for userId:", userId);
+    const progressRes = await fetch(
+      `http://localhost:8000/api/training/user-progress/?user_id=${userId}`
+    );
     if (!progressRes.ok) {
       const errorText = await progressRes.text();
-      throw new Error(`Failed to fetch progress: ${progressRes.status} ${errorText.slice(0, 100)}`);
+      throw new Error(
+        `Failed to fetch progress: ${progressRes.status} ${errorText.slice(
+          0,
+          100
+        )}`
+      );
     }
     const progressData = await progressRes.json();
 
     return {
       questions: courseData.assessment_questions || [],
-      title: courseData.title || 'Course',
+      title: courseData.title || "Course",
       progress: progressData.find((p) => p.course === Number(courseId)),
     };
   } catch (err) {
-    console.error('fetchAssessmentData error:', err.message);
+    console.error("fetchAssessmentData error:", err.message);
     throw err;
   }
 }
@@ -51,20 +62,34 @@ export async function resetAssessmentProgress(courseId, userId, setSnackbar) {
       is_completed: false,
       completed_date: null,
     };
-    console.log('Resetting progress to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    console.log(
+      "Resetting progress to:",
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      "Payload:",
+      payload
+    );
+    const res = await fetch(
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`);
+      throw new Error(
+        `Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`
+      );
     }
-    console.log('Reset response:', res.status);
+    console.log("Reset response:", res.status);
   } catch (err) {
-    console.error('resetAssessmentProgress error:', err.message);
-    setSnackbar({ open: true, message: `Error resetting progress: ${err.message}`, severity: 'error' });
+    console.error("resetAssessmentProgress error:", err.message);
+    setSnackbar({
+      open: true,
+      message: `Error resetting progress: ${err.message}`,
+      severity: "error",
+    });
     throw err;
   }
 }
@@ -95,15 +120,21 @@ export async function submitAssessment(
   router
 ) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not available. Please log in again.', severity: 'error' });
+    setSnackbar({
+      open: true,
+      message: "User ID not available. Please log in again.",
+      severity: "error",
+    });
     return;
   }
 
   const correct = calculateScore(responses, questions);
-  const percentage = questions.length ? Math.round((correct / questions.length) * 100) : 0;
+  const percentage = questions.length
+    ? Math.round((correct / questions.length) * 100)
+    : 0;
   setScore(correct);
   setScorePercentage(percentage);
-  const isPassed = percentage >= 80; 
+  const isPassed = percentage >= 80;
   setSubmitted(true);
 
   try {
@@ -114,27 +145,49 @@ export async function submitAssessment(
       is_completed: isPassed,
       completed_date: isPassed ? new Date().toISOString() : null,
     };
-    console.log('Submitting assessment to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    console.log(
+      "Submitting assessment to:",
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      "Payload:",
+      payload
+    );
+    const res = await fetch(
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Failed to update progress: ${res.status} ${errorText.slice(0, 100)}`);
+      throw new Error(
+        `Failed to update progress: ${res.status} ${errorText.slice(0, 100)}`
+      );
     }
-    console.log('Submit response:', res.status);
+    console.log("Submit response:", res.status);
     setIsCompleted(isPassed);
     if (isPassed) {
-      setSnackbar({ open: true, message: 'Assessment passed! Redirecting...', severity: 'success' });
-      setTimeout(() => router.push('/Trainings'), 2000);
+      setSnackbar({
+        open: true,
+        message: "Assessment passed! Redirecting...",
+        severity: "success",
+      });
+      setTimeout(() => router.push("/trainings"), 2000);
     } else {
-      setSnackbar({ open: true, message: 'Assessment failed. Please try again.', severity: 'error' });
+      setSnackbar({
+        open: true,
+        message: "Assessment failed. Please try again.",
+        severity: "error",
+      });
     }
   } catch (err) {
-    console.error('submitAssessment error:', err.message);
-    setSnackbar({ open: true, message: `Error: ${err.message}`, severity: 'error' });
+    console.error("submitAssessment error:", err.message);
+    setSnackbar({
+      open: true,
+      message: `Error: ${err.message}`,
+      severity: "error",
+    });
   }
 }
 
@@ -153,7 +206,11 @@ export async function retakeAssessment(
   setSnackbar
 ) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not found. Please log in again.', severity: 'error' });
+    setSnackbar({
+      open: true,
+      message: "User ID not found. Please log in again.",
+      severity: "error",
+    });
     return;
   }
 
@@ -169,22 +226,40 @@ export async function retakeAssessment(
       is_completed: false,
       completed_date: null,
     };
-    console.log('Resetting assessment to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    console.log(
+      "Resetting assessment to:",
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      "Payload:",
+      payload
+    );
+    const res = await fetch(
+      `http://localhost:8000/api/training/user-progress/${courseId}/`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`);
+      throw new Error(
+        `Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`
+      );
     }
-    console.log('Reset response:', res.status);
+    console.log("Reset response:", res.status);
     setIsCompleted(false);
-    setSnackbar({ open: true, message: 'Assessment reset. You can now retake it.', severity: 'success' });
+    setSnackbar({
+      open: true,
+      message: "Assessment reset. You can now retake it.",
+      severity: "success",
+    });
   } catch (err) {
-    console.error('retakeAssessment error:', err.message);
-    setSnackbar({ open: true, message: `Error resetting assessment: ${err.message}`, severity: 'error' });
+    console.error("retakeAssessment error:", err.message);
+    setSnackbar({
+      open: true,
+      message: `Error resetting assessment: ${err.message}`,
+      severity: "error",
+    });
   }
 }
 
@@ -194,39 +269,56 @@ export async function retakeAssessment(
  * @param {Object} session - User session object.
  * @param {Function} setSnackbar - Function to set snackbar state.
  */
-export async function downloadAssessmentCertificate(courseTitle, session, setSnackbar) {
+export async function downloadAssessmentCertificate(
+  courseTitle,
+  session,
+  setSnackbar
+) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not available. Please log in again.', severity: 'error' });
+    setSnackbar({
+      open: true,
+      message: "User ID not available. Please log in again.",
+      severity: "error",
+    });
     return;
   }
 
-  const container = document.createElement('div');
-  container.id = 'print-certificate';
-  container.style.width = '794px';
-  container.style.height = '1123px';
-  container.style.padding = '40px';
-  container.style.display = 'flex';
-  container.style.alignItems = 'center';
-  container.style.justifyContent = 'center';
-  container.style.backgroundColor = '#ffffff';
-  container.style.boxSizing = 'border-box';
-  container.style.overflow = 'hidden';
+  const container = document.createElement("div");
+  container.id = "print-certificate";
+  container.style.width = "794px";
+  container.style.height = "1123px";
+  container.style.padding = "40px";
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "center";
+  container.style.backgroundColor = "#ffffff";
+  container.style.boxSizing = "border-box";
+  container.style.overflow = "hidden";
 
   document.body.appendChild(container);
 
-  const userName = `${session.user.first_name || 'User'} ${session.user.last_name || ''}`;
+  const userName = `${session.user.first_name || "User"} ${
+    session.user.last_name || ""
+  }`;
   const date = new Date().toLocaleDateString();
 
   try {
-    const ReactDOM = await import('react-dom');
+    const ReactDOM = await import("react-dom");
     ReactDOM.render(
-      <AssessmentCertificate userName={userName} courseTitle={courseTitle} date={date} />,
+      <AssessmentCertificate
+        userName={userName}
+        courseTitle={courseTitle}
+        date={date}
+      />,
       container,
       () => {
         const opt = {
           margin: 0,
-          filename: `certificate_${userName.replace(/\s/g, '_')}_${courseTitle.replace(/\s/g, '_')}.pdf`,
-          image: { type: 'jpeg', quality: 1 },
+          filename: `certificate_${userName.replace(
+            /\s/g,
+            "_"
+          )}_${courseTitle.replace(/\s/g, "_")}.pdf`,
+          image: { type: "jpeg", quality: 1 },
           html2canvas: {
             scale: 2,
             scrollX: 0,
@@ -234,25 +326,29 @@ export async function downloadAssessmentCertificate(courseTitle, session, setSna
             useCORS: true,
             allowTaint: true,
             logging: false,
-            backgroundColor: '#ffffff',
+            backgroundColor: "#ffffff",
             width: 794,
             height: 1123,
           },
           jsPDF: {
-            unit: 'px',
+            unit: "px",
             format: [794, 1123],
-            orientation: 'portrait',
+            orientation: "portrait",
           },
         };
 
-        console.log('Generating certificate for:', userName, courseTitle);
+        console.log("Generating certificate for:", userName, courseTitle);
         html2pdf()
           .set(opt)
           .from(container)
           .save()
           .catch((err) => {
-            console.error('PDF Generation Error:', err.message);
-            setSnackbar({ open: true, message: 'Failed to generate certificate PDF', severity: 'error' });
+            console.error("PDF Generation Error:", err.message);
+            setSnackbar({
+              open: true,
+              message: "Failed to generate certificate PDF",
+              severity: "error",
+            });
           })
           .finally(() => {
             document.body.removeChild(container);
@@ -260,8 +356,12 @@ export async function downloadAssessmentCertificate(courseTitle, session, setSna
       }
     );
   } catch (err) {
-    console.error('ReactDOM Render Error:', err.message);
-    setSnackbar({ open: true, message: 'Failed to render certificate', severity: 'error' });
+    console.error("ReactDOM Render Error:", err.message);
+    setSnackbar({
+      open: true,
+      message: "Failed to render certificate",
+      severity: "error",
+    });
     document.body.removeChild(container);
   }
 }
@@ -273,7 +373,11 @@ export async function downloadAssessmentCertificate(courseTitle, session, setSna
  * @returns {number} Number of correct answers.
  */
 export function calculateScore(responses, questions) {
-  return responses.reduce((sum, response, index) => sum + (response === questions[index].answer ? 1 : 0), 0);
+  return responses.reduce(
+    (sum, response, index) =>
+      sum + (response === questions[index].answer ? 1 : 0),
+    0
+  );
 }
 
 /**

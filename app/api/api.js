@@ -22,15 +22,56 @@ export const fetchApprovals = async () => {
   }
 };
 
-export const fetchTrainingReports = async () => {
+export const fetchTrainingReports = async (
+  course_id = "",
+  financial_year_id = ""
+) => {
   try {
+    const params = {};
+
+    if (course_id) params.course_id = course_id;
+    if (financial_year_id) params.financial_year_id = financial_year_id;
+
     const response = await axiosInstance.get(
-      "/training/user-progress-report-list/"
+      "/training/user-progress-report-list/",
+      { params }
     );
-    console.log(response);
+
     return response.data;
   } catch (error) {
     console.error("Error fetching training reports:", error);
+    throw error;
+  }
+};
+
+export const fetchFinancialYears = async () => {
+  try {
+    const response = await axiosInstance.get("/training/financial-years-list/");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching training financial years:", error);
+    throw error;
+  }
+};
+
+export const fetchCourses = async () => {
+  try {
+    const response = await axiosInstance.get("/training/courses/");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching training courses:", error);
+    throw error;
+  }
+};
+
+export const fetchReportExport = async (params) => {
+  try {
+    const response = await axiosInstance.post("/training/report/", {
+      responseType: "blob",
+    });
+    return response;
+  } catch (error) {
+    console.error("Error fetching exported report:", error);
     throw error;
   }
 };
