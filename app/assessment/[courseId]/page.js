@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,14 +38,14 @@ export default function AssessmentPage() {
       setError(null);
       try {
         console.log('Initializing assessment for courseId:', courseId, 'userId:', session.user.id);
-        const { questions, title, progress } = await fetchAssessmentData(courseId, session.user.id);
+        const { questions, title, progress } = await fetchAssessmentData(courseId, session.user.id, session, setSnackbar);
         setQuestions(questions);
         setCourseTitle(title);
         setResponses(new Array(questions.length).fill(null));
 
-        if (progress?.is_completed && (!progress.assessment_score || progress.assessment_score < 80)) {
+        if (progress?.is_completed && (!progress.assessment_score || progress.assessment_score < 100)) {
           console.log('Resetting invalid progress for courseId:', courseId);
-          await resetAssessmentProgress(courseId, session.user.id, setSnackbar);
+          await resetAssessmentProgress(courseId, session.user.id, session, setSnackbar);
           setIsCompleted(false);
           setScorePercentage(0);
         } else {
@@ -71,18 +72,19 @@ export default function AssessmentPage() {
       sx={{
         py: 2,
         px: { xs: 1, sm: 2, md: 4 },
-        maxWidth: { xs: '100%', sm: '960px', md: '1200px' },
+        width: '100%',
+        maxWidth: '100%',
         mx: 'auto',
         boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
       }}
     >
       <AssessmentHeader courseTitle={courseTitle} />
-      {isCompleted && scorePercentage >= 80 && !submitted ? (
+      {isCompleted && scorePercentage >= 100 && !submitted ? (
         <AssessmentResults
           isPassed={true}
           scorePercentage={scorePercentage}
           submitted={false}
-          handleRetake={() => retakeAssessment(courseId, session, questions, setResponses, setScore, setScorePercentage, setSubmitted, setIsCompleted, setSnackbar)}
+          handleRetake={() => retakeAssessment(courseId, session, setQuestions, setResponses, setScore, setScorePercentage, setSubmitted, setIsCompleted, setSnackbar)}
           handleDownload={() => downloadAssessmentCertificate(courseTitle, session, setSnackbar)}
           router={router}
         />
@@ -97,10 +99,10 @@ export default function AssessmentPage() {
       )}
       {submitted && (
         <AssessmentResults
-          isPassed={scorePercentage >= 80} 
+          isPassed={scorePercentage >= 100}
           scorePercentage={scorePercentage}
           submitted={true}
-          handleRetake={() => retakeAssessment(courseId, session, questions, setResponses, setScore, setScorePercentage, setSubmitted, setIsCompleted, setSnackbar)}
+          handleRetake={() => retakeAssessment(courseId, session, setQuestions, setResponses, setScore, setScorePercentage, setSubmitted, setIsCompleted, setSnackbar)}
           handleDownload={() => downloadAssessmentCertificate(courseTitle, session, setSnackbar)}
           router={router}
         />
