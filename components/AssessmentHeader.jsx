@@ -23,7 +23,7 @@ export default function AssessmentHeader({ courseTitle }) {
           overflowWrap: 'break-word',
         }}
       >
-        A score exceeding 80% is required to pass the assessment.
+        A score exceeding 100% is required to pass the assessment.
       </Typography>
     </>
   );
