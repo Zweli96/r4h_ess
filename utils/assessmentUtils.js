@@ -1,79 +1,107 @@
+
 import html2pdf from 'html2pdf.js';
 import AssessmentCertificate from '../components/AssessmentCertificate';
+import axiosInstance from '../app/api/axiosInstance';
 
 /**
- * Fetches course and progress data for the assessment.
+ * Fetches course and progress data, selecting 2 random questions.
  * @param {string} courseId - The course ID.
  * @param {string} userId - The user ID.
+ * @param {Object} session - User session.
+ * @param {Function} setSnackbar - Function to set snackbar state.
  * @returns {Promise<{questions: Array, title: string, progress: Object}>}
  */
-export async function fetchAssessmentData(courseId, userId) {
+export async function fetchAssessmentData(courseId, userId, session, setSnackbar) {
+  if (!session?.user?.id) {
+    setSnackbar({
+      open: true,
+      message: 'User not authenticated. Please log in.',
+      severity: 'error',
+    });
+    throw new Error('User not authenticated');
+  }
+
   try {
     console.log('Fetching course data for courseId:', courseId);
-    const courseRes = await fetch(`http://localhost:8000/api/training/courses/${courseId}/`);
-    if (!courseRes.ok) {
-      const errorText = await courseRes.text();
-      throw new Error(`Failed to fetch course: ${courseRes.status} ${errorText.slice(0, 100)}`);
-    }
-    const courseData = await courseRes.json();
+    const courseRes = await axiosInstance.get(`/training/courses/${courseId}/`);
+    console.log('Course response:', courseRes.data);
 
     console.log('Fetching progress for userId:', userId);
-    const progressRes = await fetch(`http://localhost:8000/api/training/user-progress/?user_id=${userId}`);
-    if (!progressRes.ok) {
-      const errorText = await progressRes.text();
-      throw new Error(`Failed to fetch progress: ${progressRes.status} ${errorText.slice(0, 100)}`);
-    }
-    const progressData = await progressRes.json();
+    const progressRes = await axiosInstance.get(`/training/user-progress/?user_id=${userId}`);
+    console.log('Progress response:', progressRes.data);
+
+    const allQuestions = courseRes.data.assessment_questions || [];
+    const selectedQuestions = allQuestions.length > 1
+      ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 10)
+      : allQuestions;
 
     return {
-      questions: courseData.assessment_questions || [],
-      title: courseData.title || 'Course',
-      progress: progressData.find((p) => p.course === Number(courseId)),
+      questions: selectedQuestions,
+      title: courseRes.data.title || 'Course',
+      progress: progressRes.data.find((p) => p.course === Number(courseId)),
     };
   } catch (err) {
-    console.error('fetchAssessmentData error:', err.message);
+    console.error('fetchAssessmentData error:', err.response?.data || err.message);
+    setSnackbar({
+      open: true,
+      message: err.response?.data?.detail || 'Failed to fetch assessment data',
+      severity: 'error',
+    });
     throw err;
   }
 }
 
 /**
- * Resets invalid progress if assessment score is missing or < 100%.
+ * Resets invalid progress if assessment score is missing or < 100%, preserving completed_chapters.
  * @param {string} courseId - The course ID.
  * @param {string} userId - The user ID.
+ * @param {Object} session - User session.
  * @param {Function} setSnackbar - Function to set snackbar state.
  */
-export async function resetAssessmentProgress(courseId, userId, setSnackbar) {
+export async function resetAssessmentProgress(courseId, userId, session, setSnackbar) {
+  if (!session?.user?.id) {
+    setSnackbar({
+      open: true,
+      message: 'User not authenticated. Please log in.',
+      severity: 'error',
+    });
+    return;
+  }
+
   try {
+    // Fetch current progress to preserve completed_chapters
+    console.log('Fetching progress for userId:', userId);
+    const progressRes = await axiosInstance.get(`/training/user-progress/?user_id=${userId}`);
+    console.log('Progress response:', progressRes.data);
+    const currentProgress = progressRes.data.find((p) => p.course === Number(courseId)) || {};
+
     const payload = {
       user: userId,
-      course: courseId,
+      course: Number(courseId),
       assessment_score: null,
       is_completed: false,
       completed_date: null,
+      completed_chapters: currentProgress.completed_chapters || [],
     };
-    console.log('Resetting progress to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`);
-    }
+    console.log('Resetting progress to:', `/training/user-progress/${courseId}/`, 'Payload:', payload);
+    const res = await axiosInstance.put(`/training/user-progress/${courseId}/`, payload);
     console.log('Reset response:', res.status);
   } catch (err) {
-    console.error('resetAssessmentProgress error:', err.message);
-    setSnackbar({ open: true, message: `Error resetting progress: ${err.message}`, severity: 'error' });
+    console.error('resetAssessmentProgress error:', err.response?.data || err.message);
+    setSnackbar({
+      open: true,
+      message: err.response?.data?.detail || `Error resetting progress: ${err.message}`,
+      severity: 'error',
+    });
     throw err;
   }
 }
 
 /**
- * Submits assessment responses and updates progress.
+ * Submits assessment responses and updates progress, preserving completed_chapters.
  * @param {string} courseId - The course ID.
  * @param {Object} session - User session.
- * @param {Array} questions - Assessment questions.
+ * @param {Array} questions - Assessment questions (2 or fewer).
  * @param {Array} responses - User responses.
  * @param {Function} setScore - Sets score state.
  * @param {Function} setScorePercentage - Sets percentage state.
@@ -95,36 +123,37 @@ export async function submitAssessment(
   router
 ) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not available. Please log in again.', severity: 'error' });
+    setSnackbar({ open: true, message: 'User not authenticated. Please log in again.', severity: 'error' });
+    router.push('/');
     return;
   }
 
-  const correct = calculateScore(responses, questions);
-  const percentage = questions.length ? Math.round((correct / questions.length) * 100) : 0;
-  setScore(correct);
-  setScorePercentage(percentage);
-  const isPassed = percentage >= 80; 
-  setSubmitted(true);
-
   try {
+    const correct = calculateScore(responses, questions);
+    const percentage = questions.length ? Math.round((correct / questions.length) * 100) : 0;
+    setScore(correct);
+    setScorePercentage(percentage);
+    const isPassed = percentage === 100;
+    setSubmitted(true);
+
+    // Fetch current progress to preserve completed_chapters
+    console.log('Fetching progress for userId:', session.user.id);
+    const progressRes = await axiosInstance.get(`/training/user-progress/?user_id=${session.user.id}`);
+    console.log('Progress response:', progressRes.data);
+    const currentProgress = progressRes.data.find((p) => p.course === Number(courseId)) || {};
+
     const payload = {
       user: session.user.id,
-      course: courseId,
+      course: Number(courseId),
       assessment_score: percentage,
       is_completed: isPassed,
       completed_date: isPassed ? new Date().toISOString() : null,
+      completed_chapters: currentProgress.completed_chapters || [],
     };
-    console.log('Submitting assessment to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Failed to update progress: ${res.status} ${errorText.slice(0, 100)}`);
-    }
+    console.log('Submitting assessment to:', `/training/user-progress/${courseId}/`, 'Payload:', payload);
+    const res = await axiosInstance.put(`/training/user-progress/${courseId}/`, payload);
     console.log('Submit response:', res.status);
+
     setIsCompleted(isPassed);
     if (isPassed) {
       setSnackbar({ open: true, message: 'Assessment passed! Redirecting...', severity: 'success' });
@@ -133,18 +162,31 @@ export async function submitAssessment(
       setSnackbar({ open: true, message: 'Assessment failed. Please try again.', severity: 'error' });
     }
   } catch (err) {
-    console.error('submitAssessment error:', err.message);
-    setSnackbar({ open: true, message: `Error: ${err.message}`, severity: 'error' });
+    console.error('submitAssessment error:', err.response?.data || err.message);
+    setSnackbar({
+      open: true,
+      message: err.response?.data?.detail || `Error: ${err.message}`,
+      severity: 'error',
+    });
   }
 }
 
 /**
- * Resets assessment for a new attempt.
+ * Resets assessment for a new attempt with randomized questions, preserving completed_chapters.
+ * @param {string} courseId - The course ID.
+ * @param {Object} session - User session.
+ * @param {Function} setQuestions - Sets questions state.
+ * @param {Function} setResponses - Sets responses state.
+ * @param {Function} setScore - Sets score state.
+ * @param {Function} setScorePercentage - Sets percentage state.
+ * @param {Function} setSubmitted - Sets submitted state.
+ * @param {Function} setIsCompleted - Sets completion state.
+ * @param {Function} setSnackbar - Sets snackbar state.
  */
 export async function retakeAssessment(
   courseId,
   session,
-  questions,
+  setQuestions,
   setResponses,
   setScore,
   setScorePercentage,
@@ -153,50 +195,68 @@ export async function retakeAssessment(
   setSnackbar
 ) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not found. Please log in again.', severity: 'error' });
+    setSnackbar({ open: true, message: 'User not authenticated. Please log in again.', severity: 'error' });
     return;
   }
 
   try {
-    setSubmitted(false);
-    setResponses(new Array(questions.length).fill(null));
+    // Fetch new course data to get randomized questions
+    console.log('Fetching course data for retake, courseId:', courseId);
+    const courseRes = await axiosInstance.get(`/training/courses/${courseId}/`);
+    console.log('Retake course response:', courseRes.data);
+
+    const allQuestions = courseRes.data.assessment_questions || [];
+    const selectedQuestions = allQuestions.length > 1
+      ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 10)
+      : allQuestions;
+
+    // Fetch current progress to preserve completed_chapters
+    console.log('Fetching progress for userId:', session.user.id);
+    const progressRes = await axiosInstance.get(`/training/user-progress/?user_id=${session.user.id}`);
+    console.log('Progress response:', progressRes.data);
+    const currentProgress = progressRes.data.find((p) => p.course === Number(courseId)) || {};
+
+    // Reset state
+    setQuestions(selectedQuestions);
+    setResponses(new Array(selectedQuestions.length).fill(null));
     setScore(0);
     setScorePercentage(0);
+    setSubmitted(false);
+
+    // Update progress
     const payload = {
       user: session.user.id,
-      course: courseId,
+      course: Number(courseId),
       assessment_score: null,
       is_completed: false,
       completed_date: null,
+      completed_chapters: currentProgress.completed_chapters || [],
     };
-    console.log('Resetting assessment to:', `http://localhost:8000/api/training/user-progress/${courseId}/`, 'Payload:', payload);
-    const res = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Failed to reset progress: ${res.status} ${errorText.slice(0, 100)}`);
-    }
+    console.log('Resetting assessment to:', `/training/user-progress/${courseId}/`, 'Payload:', payload);
+    const res = await axiosInstance.put(`/training/user-progress/${courseId}/`, payload);
     console.log('Reset response:', res.status);
+
     setIsCompleted(false);
-    setSnackbar({ open: true, message: 'Assessment reset. You can now retake it.', severity: 'success' });
+    setSnackbar({ open: true, message: 'Assessment reset with new questions. You can now retake it.', severity: 'success' });
   } catch (err) {
-    console.error('retakeAssessment error:', err.message);
-    setSnackbar({ open: true, message: `Error resetting assessment: ${err.message}`, severity: 'error' });
+    console.error('retakeAssessment error:', err.response?.data || err.message);
+    setSnackbar({
+      open: true,
+      message: err.response?.data?.detail || `Error resetting assessment: ${err.message}`,
+      severity: 'error',
+    });
   }
 }
 
 /**
  * Generates and downloads a certificate.
  * @param {string} courseTitle - The course title.
- * @param {Object} session - User session object.
+ * @param {Object} session - User session.
  * @param {Function} setSnackbar - Function to set snackbar state.
  */
 export async function downloadAssessmentCertificate(courseTitle, session, setSnackbar) {
   if (!session?.user?.id) {
-    setSnackbar({ open: true, message: 'User ID not available. Please log in again.', severity: 'error' });
+    setSnackbar({ open: true, message: 'User not authenticated. Please log in again.', severity: 'error' });
     return;
   }
 
@@ -268,7 +328,7 @@ export async function downloadAssessmentCertificate(courseTitle, session, setSna
 
 /**
  * Calculates score from responses.
- * @param {Array<number>} responses - Array of user responses.
+ * @param {Array} responses - Array of user responses.
  * @param {Array} questions - Array of question objects with correct answers.
  * @returns {number} Number of correct answers.
  */

@@ -4,7 +4,7 @@
 import html2pdf from 'html2pdf.js';
 import ReactDOM from 'react-dom';
 import Certificate from '../components/Certificate';
-import axiosInstance from '../app/api/axiosInstance'; // Corrected path, kept for potential future use
+import axiosInstance from '../app/api/axiosInstance';
 
 /**
  * Calculates progress percentage for a course.
@@ -53,6 +53,11 @@ export async function handleChapterComplete(
   setSnackbar
 ) {
   if (!session?.user?.id) {
+    setSnackbar({
+      open: true,
+      message: 'User not authenticated. Please log in.',
+      severity: 'error',
+    });
     router.push('/');
     return;
   }
@@ -67,28 +72,26 @@ export async function handleChapterComplete(
       completed_chapters: updatedChapters,
       is_completed: updatedChapters.length === selectedCourse?.chapters.length,
     };
-   
-    const response = await fetch(`http://localhost:8000/api/training/user-progress/${courseId}/`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
 
-    console.log('Response status:', response.status);
+    console.log('Submitting progress to:', `/training/user-progress/${courseId}/`, 'Payload:', payload);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to save progress: ${response.status} ${errorText.slice(0, 100)}`);
-    }
+    const response = await axiosInstance.put(
+      `/training/user-progress/${courseId}/`, // Trailing slash
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log('Response status:', response.status, 'Response data:', response.data);
 
     setCompletedChapters((prev) => ({
       ...prev,
       [courseId]: { ...prev[courseId], completed_chapters: updatedChapters },
     }));
 
-    // Get current activeStep
     let activeStep = 0;
     setActiveStep((prev) => {
       activeStep = prev;
@@ -101,17 +104,18 @@ export async function handleChapterComplete(
       setSnackbar({
         open: true,
         message: 'Course completed! Proceeding to assessment...',
-        type: 'success',
+        severity: 'success',
       });
       setTimeout(() => router.push(`/assessment/${courseId}`), 2000);
     }
   } catch (error) {
-    console.error('handleChapterComplete error:', error.message || error);
+    console.error('handleChapterComplete error:', error.response?.data || error.message);
     setSnackbar({
       open: true,
-      message: error.message || 'Failed to save progress',
-      type: 'error',
+      message: error.response?.data?.detail || 'Failed to save progress',
+      severity: 'error',
     });
+    throw error;
   }
 }
 
@@ -119,8 +123,18 @@ export async function handleChapterComplete(
  * Generates and downloads a certificate as PDF.
  * @param {string} courseTitle - The course title.
  * @param {Object} session - User session.
+ * @param {Function} setSnackbar - State setter for snackbar.
  */
-export function handleDownloadCertificate(courseTitle, session) {
+export async function handleDownloadCertificate(courseTitle, session, setSnackbar) {
+  if (!session?.user?.id) {
+    setSnackbar({
+      open: true,
+      message: 'User not authenticated. Please log in.',
+      severity: 'error',
+    });
+    return;
+  }
+
   const container = document.createElement('div');
   container.id = 'print-certificate';
   container.style.width = '794px';
@@ -138,39 +152,51 @@ export function handleDownloadCertificate(courseTitle, session) {
   const userName = `${session?.user?.first_name || 'User'} ${session?.user?.last_name || ''}`;
   const date = new Date().toLocaleDateString();
 
-  ReactDOM.render(
-    <Certificate userName={userName} courseTitle={courseTitle} date={date} />,
-    container,
-    () => {
-      const opt = {
-        margin: 0,
-        filename: `certificate_${courseTitle}_${session?.user?.first_name || 'User'}_${session?.user?.last_name || ''}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: {
-          scale: 2,
-          scrollX: 0,
-          scrollY: 0,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          width: 794,
-          height: 1123,
-        },
-        jsPDF: {
-          unit: 'px',
-          format: [794, 1123],
-          orientation: 'portrait',
-        },
-      };
+  try {
+    const ReactDOM = await import('react-dom');
+    ReactDOM.render(
+      <Certificate userName={userName} courseTitle={courseTitle} date={date} />,
+      container,
+      () => {
+        const opt = {
+          margin: 0,
+          filename: `certificate_${userName.replace(/\s/g, '_')}_${courseTitle.replace(/\s/g, '_')}.pdf`,
+          image: { type: 'jpeg', quality: 1 },
+          html2canvas: {
+            scale: 2,
+            scrollX: 0,
+            scrollY: 0,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            width: 794,
+            height: 1123,
+          },
+          jsPDF: {
+            unit: 'px',
+            format: [794, 1123],
+            orientation: 'portrait',
+          },
+        };
 
-      html2pdf()
-        .set(opt)
-        .from(container)
-        .save()
-        .then(() => {
-          document.body.removeChild(container);
-        });
-    }
-  );
+        console.log('Generating certificate for:', userName, courseTitle);
+        html2pdf()
+          .set(opt)
+          .from(container)
+          .save()
+          .catch((err) => {
+            console.error('PDF Generation Error:', err.message);
+            setSnackbar({ open: true, message: 'Failed to generate certificate PDF', severity: 'error' });
+          })
+          .finally(() => {
+            document.body.removeChild(container);
+          });
+      }
+    );
+  } catch (err) {
+    console.error('ReactDOM Render Error:', err.message);
+    setSnackbar({ open: true, message: 'Failed to render certificate', severity: 'error' });
+    document.body.removeChild(container);
+  }
 }

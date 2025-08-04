@@ -77,7 +77,7 @@ export default function TrainingCard({
             color="primary"
             size="small"
             component={Link}
-            href="/trainings"
+            href="Trainings"
             endIcon={<ArrowForwardIcon />}
           >
             Go to Trainings

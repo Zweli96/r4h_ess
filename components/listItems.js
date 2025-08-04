@@ -55,7 +55,7 @@ export const menu = [
       },
       {
         title: "Training Report",
-        to: "/trainings/reports",
+        to: "/Trainings/reports",
       },
       // {
       //   title: "View Timesheet",
