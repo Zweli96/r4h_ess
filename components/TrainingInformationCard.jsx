@@ -39,7 +39,7 @@ export default function TrainingCard({
       sx={{
         width: { xs: "100%", sm: "100%", md: "40%" },
         maxWidth: "500px",
-        minHeight: { xs: "50%", md: "180px" },
+        minHeight: { xs: "50%", md: "220px" },
         minWidth: { xs: "100%", md: "250px" },
         display: "flex",
         alignSelf: "center",
@@ -77,7 +77,7 @@ export default function TrainingCard({
             color="primary"
             size="small"
             component={Link}
-            href="Trainings"
+            href="trainings"
             endIcon={<ArrowForwardIcon />}
           >
             Go to Trainings

@@ -39,7 +39,7 @@ export async function fetchAssessmentData(
     const allQuestions = courseRes.data.assessment_questions || [];
     const selectedQuestions =
       allQuestions.length > 1
-        ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 10)
+        ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 15)
         : allQuestions;
 
     return {

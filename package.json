@@ -24,6 +24,7 @@
     "next-auth": "^4.24.11",
     "react": "^18",
     "react-dom": "^18.3.1",
+    "react-markdown": "^10.1.0",
     "react-to-print": "^3.0.6",
     "sharp": "^0.34.2",
     "x-data-grid": "^2.1.0",

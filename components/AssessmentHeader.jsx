@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Typography } from "@mui/material";
 
 export default function AssessmentHeader({ courseTitle }) {
   return (
@@ -7,9 +7,9 @@ export default function AssessmentHeader({ courseTitle }) {
         variant="h4"
         gutterBottom
         sx={{
-          fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
-          wordBreak: 'break-word',
-          overflowWrap: 'break-word',
+          fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
         }}
       >
         Assessment for {courseTitle}
@@ -18,12 +18,12 @@ export default function AssessmentHeader({ courseTitle }) {
         variant="body1"
         sx={{
           mb: 3,
-          fontSize: { xs: '0.875rem', sm: '1rem' },
-          wordBreak: 'break-word',
-          overflowWrap: 'break-word',
+          fontSize: { xs: "0.875rem", sm: "1rem" },
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
         }}
       >
-        A score exceeding 100% is required to pass the assessment.
+        A score of 100% is required to pass the assessment.
       </Typography>
     </>
   );

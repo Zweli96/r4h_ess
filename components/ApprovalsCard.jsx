@@ -20,6 +20,7 @@ export default function ApprovalsCard({ pending_count = 0 }) {
         width: { xs: "100%", sm: "100%", md: "40%" },
         maxWidth: "500px",
         minWidth: { xs: "100%", md: "250px" },
+        minHeight: { xs: "50%", md: "220px" },
         display: "flex",
         alignSelf: "center",
         justifyContent: "center",

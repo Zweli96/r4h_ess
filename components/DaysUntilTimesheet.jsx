@@ -71,7 +71,7 @@ export default function DaysUntilTimesheetCard({ is_submitted = false }) {
         variant="outlined"
         sx={{
           width: "100%",
-          minHeight: "25vh",
+          minHeight: { xs: "50%", md: "220px" },
           borderRadius: "24px",
           overflow: "hidden",
           display: "flex",

@@ -66,7 +66,7 @@ export const fetchCourses = async () => {
 
 export const fetchReportExport = async (params) => {
   try {
-    const response = await axiosInstance.post("/training/report/", {
+    const response = await axiosInstance.post("/training/report/", params, {
       responseType: "blob",
     });
     return response;
