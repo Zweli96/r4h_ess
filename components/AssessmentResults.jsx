@@ -57,7 +57,7 @@ export default function AssessmentResults({
             )}
             <Button
               variant="outlined"
-              onClick={() => router.push("/trainings")}
+              onClick={() => router.push("/Trainings")}
               sx={{
                 minWidth: { xs: 100, sm: 120 },
                 fontSize: { xs: "0.75rem", sm: "0.875rem" },
@@ -126,7 +126,7 @@ export default function AssessmentResults({
             </Button>
             <Button
               variant="outlined"
-              onClick={() => router.push("/trainings")}
+              onClick={() => router.push("/Trainings")}
               sx={{
                 minWidth: { xs: 100, sm: 120 },
                 fontSize: { xs: "0.75rem", sm: "0.875rem" },

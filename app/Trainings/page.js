@@ -44,13 +44,17 @@ export default function TrainingPage() {
           `/training/user-progress/?user_id=${session.user.id}`
         );
         const progressData = progressRes.data;
+
         const progressMap = {};
         progressData.forEach((p) => {
+          const score = p.assessment_score ?? 0;
           progressMap[p.course] = {
             completed_chapters: p.completed_chapters,
-            is_completed: p.is_completed,
+            assessment_score: score,
+            passed: score === 100, 
           };
         });
+
         setCompletedChapters(progressMap);
       } catch (err) {
         console.error('Fetch error:', err);
@@ -92,6 +96,7 @@ export default function TrainingPage() {
         >
           R4H Trainings
         </Typography>
+
         {courseId ? (
           <CourseContent
             courseId={Number(courseId)}

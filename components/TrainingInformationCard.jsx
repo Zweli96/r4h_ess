@@ -59,7 +59,7 @@ export default function TrainingCard({
       >
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-            <Link href="/trainings">
+            <Link href="/Trainings">
               <TrainingAvatar allCompleted={allCompleted} size={48} />
             </Link>
             <Box sx={{ ml: 2 }}>

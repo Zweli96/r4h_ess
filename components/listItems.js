@@ -55,7 +55,7 @@ export const menu = [
       },
       {
         title: "Training Report",
-        to: "/trainings/reports",
+        to: "/Trainings/reports",
       },
     ],
   },
@@ -70,7 +70,7 @@ export const menu = [
       // },
       {
         title: "Available Trainings",
-        to: "/trainings/",
+        to: "/Trainings/",
       },
     ],
   },

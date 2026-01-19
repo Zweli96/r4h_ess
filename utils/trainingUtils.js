@@ -26,7 +26,7 @@ export function getProgress(courseId, totalChapters, completedChapters) {
  */
 export function handleCourseClick(courseId, router, setCompletedChapters) {
   setCompletedChapters((prev) => ({ ...prev }));
-  router.push(`/trainings?courseId=${courseId}`);
+  router.push(`/Trainings?courseId=${courseId}`);
 }
 
 /**

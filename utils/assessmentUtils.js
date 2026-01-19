@@ -209,7 +209,7 @@ export async function submitAssessment(
         message: "Assessment passed! Redirecting...",
         severity: "success",
       });
-      setTimeout(() => router.push("/trainings"), 2000);
+      setTimeout(() => router.push("/Trainings"), 2000);
     } else {
       setSnackbar({
         open: true,
@@ -268,7 +268,7 @@ export async function retakeAssessment(
     const allQuestions = courseRes.data.assessment_questions || [];
     const selectedQuestions =
       allQuestions.length > 1
-        ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 10)
+        ? allQuestions.sort(() => Math.random() - 0.5).slice(0, 15)
         : allQuestions;
 
     // Fetch current progress to preserve completed_chapters
