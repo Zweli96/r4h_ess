@@ -209,7 +209,7 @@ export async function submitAssessment(
         message: "Assessment passed! Redirecting...",
         severity: "success",
       });
-      setTimeout(() => router.push("/Trainings"), 2000);
+      setTimeout(() => router.push("/trainings"), 2000);
     } else {
       setSnackbar({
         open: true,
