@@ -22,6 +22,16 @@ export const fetchApprovals = async () => {
   }
 };
 
+export const fetchUserData = async () => {
+  try {
+    const response = await axiosInstance.get("/auth/user/");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw error;
+  }
+};
+
 export const fetchTrainingReports = async (
   course_id = "",
   financial_year_id = ""
