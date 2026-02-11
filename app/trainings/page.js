@@ -1,14 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect, Suspense, useContext } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { LoadingContext } from '../../components/LoadingContext';
-import { Box, CircularProgress, Typography } from '@mui/material';
-import axiosInstance from '../api/axiosInstance';
-import CourseList from '../../components/CourseList';
-import CourseContent from '../../components/CourseContent';
+import { useState, useEffect, Suspense, useContext } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { LoadingContext } from "../../components/LoadingContext";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import axiosInstance from "../api/axiosInstance";
+// import CourseList from "../../components/CourseList";
+// import CourseContent from "../../components/CourseContent";
+import dynamic from "next/dynamic"; // 1. Import dynamic
 
+// 2. Load these components dynamically with SSR disabled
+const CourseList = dynamic(() => import("../../components/CourseList"), {
+  ssr: false,
+  loading: () => <CircularProgress />,
+});
+
+const CourseContent = dynamic(() => import("../../components/CourseContent"), {
+  ssr: false,
+  loading: () => <CircularProgress />,
+});
 /**
  * Main TrainingPage component with routing and data fetching.
  * Renders CourseList or CourseContent based on courseId query param.
@@ -16,10 +27,10 @@ import CourseContent from '../../components/CourseContent';
 export default function TrainingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const courseId = searchParams.get('courseId');
+  const courseId = searchParams.get("courseId");
   const { data: session, status } = useSession({
     required: true,
-    onUnauthenticated: () => router.push('/'),
+    onUnauthenticated: () => router.push("/"),
   });
   const { setIsLoading } = useContext(LoadingContext) || {};
 
@@ -28,7 +39,7 @@ export default function TrainingPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status !== 'authenticated' || !session?.user?.id) return;
+    if (status !== "authenticated" || !session?.user?.id) return;
 
     const fetchData = async () => {
       try {
@@ -36,7 +47,7 @@ export default function TrainingPage() {
         setLoading(true);
 
         // Fetch courses
-        const coursesRes = await axiosInstance.get('/training/courses/');
+        const coursesRes = await axiosInstance.get("/training/courses/");
         setCourses(coursesRes.data);
 
         // Fetch user progress
@@ -51,13 +62,13 @@ export default function TrainingPage() {
           progressMap[p.course] = {
             completed_chapters: p.completed_chapters,
             assessment_score: score,
-            passed: score === 100, 
+            passed: score === 100,
           };
         });
 
         setCompletedChapters(progressMap);
       } catch (err) {
-        console.error('Fetch error:', err);
+        console.error("Fetch error:", err);
       } finally {
         setLoading(false);
         setIsLoading?.(false);
@@ -66,9 +77,9 @@ export default function TrainingPage() {
     fetchData();
   }, [status, session, setIsLoading]);
 
-  if (status === 'loading' || loading) {
+  if (status === "loading" || loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
         <CircularProgress />
       </Box>
     );
@@ -80,18 +91,18 @@ export default function TrainingPage() {
         sx={{
           py: 2,
           px: { xs: 1, sm: 2, md: 4 },
-          maxWidth: '1200px',
-          mx: 'auto',
-          width: '100%',
+          maxWidth: "1200px",
+          mx: "auto",
+          width: "100%",
         }}
       >
         <Typography
           variant="h3"
           gutterBottom
           sx={{
-            fontSize: { xs: '1rem', sm: '1.5rem', md: '2rem' },
-            textAlign: { xs: 'center', sm: 'left' },
-            width: '100%',
+            fontSize: { xs: "1rem", sm: "1.5rem", md: "2rem" },
+            textAlign: { xs: "center", sm: "left" },
+            width: "100%",
           }}
         >
           R4H Trainings
